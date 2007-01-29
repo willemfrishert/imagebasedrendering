@@ -1,0 +1,11 @@
+function l = calibrate(image, curve)
+%   The calibrate function calibrates the image, parameter 'image'
+%   using the camera curve, parameter 'curve'.
+%	'curve' is the 3-by-256 element vector containing the response curve of the
+%	camera used. Can be obtained through the mkhdr program created by
+%	Debevec, Hawkins & Duiker (California 1999).
+%
+%   The return value from the routine is the calibrated image 
+
+
+l = image;
