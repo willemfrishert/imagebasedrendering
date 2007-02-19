@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\src\hdrloader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\src\Main.cpp"
 				>
 			</File>
@@ -228,6 +232,10 @@
 			</File>
 			<File
 				RelativePath="..\inc\ExtensionsLoader.h"
+				>
+			</File>
+			<File
+				RelativePath="..\inc\hdrloader.h"
 				>
 			</File>
 			<File

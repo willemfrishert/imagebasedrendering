@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "UIHandler.h"
+#include "hdrloader.h"
 
 //CONSTANTS
 const int KWindowPositionX = 50;
@@ -10,6 +11,8 @@ const int KWindowHeight = 600;
 
 void initContext(int argc, char **argv)
 {
+	HDRLoaderResult hdrPic;
+	HDRLoader::load("./textures/beach_cross.hdr", hdrPic);
 
 	glutInit( &argc, argv );
 	
