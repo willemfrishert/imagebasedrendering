@@ -9,15 +9,14 @@ public:
 	CubeMap(GLsizei aImageSize = 256);
 	~CubeMap();
 
-	void setFaces(float* aPositiveX, float* aNegativeX, float* aPositiveY, 
-		float* aNegativeY, float* aPositiveZ, float* aNegativeZ);
+	void extractFaces(float* columns, int height, int width);
+
+	void setupCubeMap();
 
 	void render();
 
 	// methods
 private:
-
-	void setupCubeMap();
 
 	// attributes
 private:
