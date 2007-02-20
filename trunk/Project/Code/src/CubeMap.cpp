@@ -4,17 +4,17 @@
 #include "CubeMap.h"
 
 
-static Vector3 vertices[8] = {
+static float vertices[8][3] = {
 
-	Vector3(-1.0,  1.0, -1.0), // l t f
-	Vector3(-1.0, -1.0, -1.0), // l b f
-	Vector3( 1.0, -1.0, -1.0), // r b f
-	Vector3( 1.0,  1.0, -1.0), // r t f
+	{-1.0,  1.0, -1.0}, // l t f
+	{-1.0, -1.0, -1.0}, // l b f
+	{ 1.0, -1.0, -1.0}, // r b f
+	{ 1.0,  1.0, -1.0}, // r t f
 
-	Vector3(-1.0,  1.0,  1.0), // l t b
-	Vector3(-1.0, -1.0,  1.0), // l b b
-	Vector3( 1.0, -1.0,  1.0), // r b b
-	Vector3( 1.0,  1.0,  1.0), // r t b
+	{-1.0,  1.0,  1.0}, // l t b
+	{-1.0, -1.0,  1.0}, // l b b
+	{ 1.0, -1.0,  1.0}, // r b b
+	{ 1.0,  1.0,  1.0}, // r t b
 };
 
 static int faces[6][4] = {
@@ -31,44 +31,44 @@ static int faces[6][4] = {
 CubeMap::CubeMap(GLsizei aImageSize /* = 256 */)
 : imageSize( aImageSize )
 {
-	cube = new Mesh();
-	cube->addVertex( Vector3(-1.0,  1.0, -1.0) );
-	cube->addVertex( Vector3(-1.0, -1.0, -1.0) );
-	cube->addVertex( Vector3( 1.0, -1.0, -1.0) );
-	cube->addVertex( Vector3( 1.0,  1.0, -1.0) );
-	cube->addVertex( Vector3(-1.0,  1.0,  1.0) );
-	cube->addVertex( Vector3(-1.0, -1.0,  1.0) );
-	cube->addVertex( Vector3( 1.0, -1.0,  1.0) );
-	cube->addVertex( Vector3( 1.0,  1.0,  1.0) );
+	//cube = new Mesh();
+	//cube->addVertex( Vector3(-1.0,  1.0, -1.0) );
+	//cube->addVertex( Vector3(-1.0, -1.0, -1.0) );
+	//cube->addVertex( Vector3( 1.0, -1.0, -1.0) );
+	//cube->addVertex( Vector3( 1.0,  1.0, -1.0) );
+	//cube->addVertex( Vector3(-1.0,  1.0,  1.0) );
+	//cube->addVertex( Vector3(-1.0, -1.0,  1.0) );
+	//cube->addVertex( Vector3( 1.0, -1.0,  1.0) );
+	//cube->addVertex( Vector3( 1.0,  1.0,  1.0) );
 
-	// Front
-	cube->addTriangleIndices(0, 1, 2);
-	cube->addTriangleIndices(2, 3, 0);
+	//// Front
+	//cube->addTriangleIndices(0, 1, 2);
+	//cube->addTriangleIndices(2, 3, 0);
 
-	// Back
-	cube->addTriangleIndices(7, 6, 5);
-	cube->addTriangleIndices(5, 4, 7);
+	//// Back
+	//cube->addTriangleIndices(7, 6, 5);
+	//cube->addTriangleIndices(5, 4, 7);
 
-	// Left
-	cube->addTriangleIndices(4, 5, 1);
-	cube->addTriangleIndices(1, 0, 4);
+	//// Left
+	//cube->addTriangleIndices(4, 5, 1);
+	//cube->addTriangleIndices(1, 0, 4);
 
-	// Right
-	cube->addTriangleIndices(3, 2, 6);
-	cube->addTriangleIndices(6, 7, 3);
-	
-	// Top
-	cube->addTriangleIndices(4, 0, 3);
-	cube->addTriangleIndices(3, 7, 4);
+	//// Right
+	//cube->addTriangleIndices(3, 2, 6);
+	//cube->addTriangleIndices(6, 7, 3);
+	//
+	//// Top
+	//cube->addTriangleIndices(4, 0, 3);
+	//cube->addTriangleIndices(3, 7, 4);
 
-	// Bottom
-	cube->addTriangleIndices(1, 5, 6);
-	cube->addTriangleIndices(6, 2, 1);
+	//// Bottom
+	//cube->addTriangleIndices(1, 5, 6);
+	//cube->addTriangleIndices(6, 2, 1);
 }
 
 CubeMap::~CubeMap()
 {
-	delete cube;
+	//delete cube;
 }
 
 void CubeMap::render()
@@ -83,7 +83,19 @@ void CubeMap::render()
 	glEnable(GL_AUTO_NORMAL);
 	glEnable(GL_NORMALIZE);
 
-	cube->draw();
+	for (int i = 0; i < 6; ++i) 
+	{
+		glBegin(GL_QUADS);
+		
+		for (int j = 0; j < 4; ++j) 
+		{
+			glNormal3fv( vertices[ faces[i][j] ] );
+			glVertex3fv( vertices[ faces[i][j] ] );
+		}
+
+		glEnd();
+
+	}
 
 	////glDisable(GL_LIGHTING);
 	//glEnable(GL_TEXTURE_2D);
@@ -99,32 +111,78 @@ void CubeMap::render()
 	//glEnd();
 }
 
-void CubeMap::setFaces( float* aPositiveX, float* aNegativeX, float* aPositiveY, float* aNegativeY, 
-					   float* aPositiveZ, float* aNegativeZ )
+void CubeMap::extractFaces(float *columns, int height, int width)
 {
-	this->positiveX = aPositiveX;
-	this->positiveY = aPositiveY;
-	this->positiveZ = aPositiveZ;
+	int side = 256;
+	int ch = 3;
 
-	this->negativeX = aNegativeX;
-	this->negativeY = aNegativeY;
-	this->negativeZ = aNegativeZ;
+	this->positiveX = new float[side * side * ch];
+	this->positiveY = new float[side * side * ch];
+	this->positiveZ = new float[side * side * ch];
+	this->negativeX = new float[side * side * ch];
+	this->negativeY = new float[side * side * ch];
+	this->negativeZ = new float[side * side * ch];
 
-	setupCubeMap();
+	int start = side * ch;
+	for (int i = 0; i < side; i++)
+	{
+		int index	= i * width * ch;
 
-	//glGenTextures(1, &texName);
-	//
-	//glBindTexture(GL_TEXTURE_2D, texName);
+		//// flip vertically
+		//int index2	= (side - i - 1) * side * ch;
 
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 
-	//	GL_NEAREST);
-	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-	//	GL_NEAREST);
-	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256,
-	//	256, 0, GL_RGB, GL_FLOAT, this->negativeZ);
+		//// positive Y
+		//start = side * ch;
+		//memcpy(&((*positiveY)[index2]), &res.cols[start + index], sizeof(float) * side * ch);
+
+		//// negative X
+		//start = res.width * side * ch;
+		//memcpy(&((*negativeX)[index2]), &res.cols[start + index], sizeof(float) * side * ch);
+
+		//// positive Z
+		//start += side * ch;
+		//memcpy(&((*positiveZ)[index2]), &res.cols[start + index], sizeof(float) * side * ch);
+
+		//// positive X
+		//start += side * ch;
+		//memcpy(&((*positiveX)[index2]), &res.cols[start + index], sizeof(float) * side * ch);
+
+		//// negative Y
+		//start = (res.width * side * 2 + side) * ch;
+		//memcpy(&((*negativeY)[index2]), &res.cols[start + index], sizeof(float) * side * ch);
+
+		//// negative Z
+		//start = (3 * side * res.width + side) * ch;
+		//memcpy(&((*negativeZ)[index2]), &res.cols[start + index], sizeof(float) * side * ch);
+
+		int index2	= (side - i - 1) * side * ch;
+
+		// positive Y
+		start = side * ch;
+		memcpy(&((positiveY)[index2]), &columns[start + index], sizeof(float) * side * ch);
+
+		// positive X
+		index2	= i * side * ch;
+		start = width * side * ch;
+		memcpy(&((positiveX)[index2]), &columns[start + index], sizeof(float) * side * ch);
+
+		// negative Z
+		start += side * ch;
+		memcpy(&((negativeZ)[index2]), &columns[start + index], sizeof(float) * side * ch);
+
+		// negative X
+		start += side * ch;
+		memcpy(&((negativeX)[index2]), &columns[start + index], sizeof(float) * side * ch);
+
+		// negative Y
+		index2	= (side - i - 1) * side * ch;
+		start = (width * side * 2 + side) * ch;
+		memcpy(&((negativeY)[index2]), &columns[start + index], sizeof(float) * side * ch);
+
+		// positive Z
+		start = (3 * side * width + side) * ch;
+		memcpy(&((positiveZ)[index2]), &columns[start + index], sizeof(float) * side * ch);
+	}
 }
 
 void CubeMap::setupCubeMap()
@@ -153,9 +211,9 @@ void CubeMap::setupCubeMap()
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_EXT, 0, GL_RGB, imageSize,
 			imageSize, 0, GL_RGB, GL_FLOAT, negativeZ);
 
-		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_EXT);
-		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_EXT);
-		glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP_EXT); 
+		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+		glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP); 
 		glEnable(GL_TEXTURE_GEN_S);
 		glEnable(GL_TEXTURE_GEN_T);
 		glEnable(GL_TEXTURE_GEN_R);
