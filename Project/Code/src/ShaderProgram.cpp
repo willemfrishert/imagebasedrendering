@@ -16,6 +16,7 @@ ShaderProgram::ShaderProgram(void)
 
 ShaderProgram::~ShaderProgram(void)
 {
+	glDeleteProgram( this->program );
 }
 
 /**
