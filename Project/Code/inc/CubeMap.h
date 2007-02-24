@@ -1,25 +1,33 @@
 #pragma once
 
+#include <string>
+
 typedef unsigned int GLuint;
 typedef int GLsizei;
+typedef int GLint;
+
+using namespace std;
 
 class CubeMap
 {
 public:
-	CubeMap(GLsizei aImageSize = 256);
+	CubeMap(GLint nChannels, GLsizei aImageSize = 256);
 	~CubeMap();
 
-	void extractFaces(float* columns, int height, int width);
+	void setupCubeMap(string filenamePrefix);
 
-	void setupCubeMap();
-
-	void render();
+	void render(float* inverseTransMatrix);
 
 	// methods
 private:
 
+	void extractFaces(float** columns, int height, int width);
+
 	// attributes
 private:
+	/*
+	 * Cubemap textures
+	 */
 	float* positiveX;
 	float* negativeX;
 	
@@ -29,9 +37,16 @@ private:
 	float* positiveZ;
 	float* negativeZ;
 
+	/**
+	 * @description 
+	 */
 	GLsizei imageSize;
 
-	GLuint texName;
+	/**
+	 * Default value
+	 * Variable comment
+	 */
+	GLint channels;
 
-	//Mesh* cube;
+	GLint format;
 };
