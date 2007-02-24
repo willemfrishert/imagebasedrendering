@@ -16,6 +16,7 @@ ShaderObject::ShaderObject(GLenum shaderType, char* filename)
 
 ShaderObject::~ShaderObject(void)
 {
+	glDeleteShader( this->shaderId );
 }
 
 GLuint ShaderObject::getShaderId() const

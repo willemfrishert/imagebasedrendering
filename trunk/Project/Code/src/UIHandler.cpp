@@ -1,5 +1,11 @@
 
 //INCLUDE FILES
+#include "CubeMap.h"
+#include "Vector3.h"
+#include "Matrix4.h"
+#include "Quaternion.h"
+#include "VirtualTrackball.h"
+#include "Renderer.h"
 #include "UIHandler.h"
 
 //CONSTANTS
@@ -17,6 +23,7 @@ UIHandler::UIHandler( Renderer* aRenderer )
 {
 	iRenderer = aRenderer;
 	UIHandler::iCurrentUi = this;
+	this->iRenderer->GetTrackball().SetResolution( 1.0 );
 }
 
 //Destructor
@@ -84,10 +91,12 @@ void UIHandler::ProcessMouseEvent( int button, int state, int x, int y )
 			iMouseButtonDown = EMouseDownLeft;
 			this->iRenderer->SetOldXRotation( this->iRenderer->GetXRotation() );
 			this->iRenderer->SetOldYRotation( this->iRenderer->GetYRotation() );
+			this->iRenderer->GetTrackball().MouseDown(Vector3<float>(x, y, 0));
 		}
 		else
 		{
 			iMouseButtonDown = EMouseUp;
+			this->iRenderer->GetTrackball().MouseUp(Vector3<float>(x, y, 0));
 		}
 		break;
 		//Set mesh position
@@ -115,6 +124,8 @@ void UIHandler::ProcessMouseMotionEvent( int x, int y )
 			+ (float)(y - this->iMouseY) / 4.0);
 		this->iRenderer->SetYRotation( this->iRenderer->GetOldYRotation() 
 			+ (float)(x - this->iMouseX) / 4.0);
+		
+		this->iRenderer->GetTrackball().MouseMove(Vector3<float>(x, y, 0));
 	}
 	else if( EMouseDownRight == iMouseButtonDown)
 	{
