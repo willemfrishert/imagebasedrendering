@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Basic.h"
-#include "Renderer.h"
+#include "VirtualTrackball.h"
 
 //CLASS DECLARATION
+
+class Renderer;
 
 /** \brief User interface class.
 *
@@ -42,7 +44,7 @@ private:
 	Renderer* iRenderer;
 	TMouseDownStatus iMouseButtonDown;
 	int iMouseX;
-	int iMouseY;
+	int iMouseY;	
 };
 
 extern void ProcessNormalKeysWithUi( unsigned char key, int x, int y );
