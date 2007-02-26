@@ -59,7 +59,7 @@ FloatTextProcessor::FloatTextProcessor( float* values, int width, int height )
 
 	// The iWidth/2 x iHeight/2 is enough for the rest of the generated textures
 	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB_FLOAT32_ATI, 
-		iWidth/2, iHeight/2, 0, GL_LUMINANCE, GL_FLOAT, 0);
+		iWidth, iHeight, 0, GL_LUMINANCE, GL_FLOAT, 0);
 
 	// Shader misc.
 	iShaderProgram			= new ShaderProgram();
@@ -79,7 +79,7 @@ void FloatTextProcessor::processData()
 {
 	int curReadTex = 0;
 	int curWriteTex = 1;
-	
+
 	// the current texture target dimensions
 	int targetWidth	= iWidth / 2;
 	int targetHeight = iHeight / 2;
@@ -94,41 +94,42 @@ void FloatTextProcessor::processData()
 
 	iShaderProgram->useProgram();
 
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 3/*targetWidth > 1*/; i++)
 	{
 		curReadTex	= i % 2;
 		curWriteTex = (i+1) % 2;
 	
-		//// Don't forget to clean the COLOR/DEPTH buffers
+		// Don't forget to clean the COLOR/DEPTH buffers
+		//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 
 		// define the viewport to be 1/4 of the previous texture
 		// the fragment shader will output 1/4 of the data
-			glViewport(0, 0, targetWidth, targetHeight);
+		//glViewport(0, 0, targetWidth, targetHeight);
+		glViewport(0, 0, iWidth, iHeight);
 
-		// attach the current read texture: it should be the original one,
+		// attach the current write texture: it should be the original one,
 		// or the previously written one
 		iFbo->attachTexture(iTextures[ curWriteTex ], GL_COLOR_ATTACHMENT0_EXT, 
 			GL_TEXTURE_RECTANGLE_ARB, 0);
 
 		// and finally, draw, and do the computations on the fragment shader
-		renderSceneOnQuad(iTextures[curReadTex], 0, 
+		renderSceneOnQuad(iTextures[curReadTex], GL_TEXTURE_RECTANGLE_ARB, 
 			targetWidth, targetHeight);
 
+		printf("Reading from texture id: %d \n", iTextures[ curReadTex ]);
+		printf("Writing to texture id: %d \n", iTextures[ curWriteTex ]);
 
-		targetWidth		= iWidth / 2;
-		targetHeight	= iHeight / 2;
+		targetWidth		/= 2;
+		targetHeight	/= 2;
 	}
 
 	iShaderProgram->disableProgram();
 
-	/************************************************************************/
-	/* 4 ?                                                                  */
-	/************************************************************************/
-	GLfloat retVal[16];
+	const int side = 1;
+	GLfloat retVal[side*side*4];
 	glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-	glReadPixels(0,0,2,2,GL_RGBA,GL_FLOAT,&retVal);
+	glReadPixels(0, 0, side, side, GL_RGBA, GL_FLOAT, &retVal);
 
 	// we can draw back to screen again, if we want :)
 	iFbo->unbind();
@@ -145,55 +146,92 @@ void FloatTextProcessor::renderSceneOnQuad(GLuint textureId,
 			glMatrixMode( GL_PROJECTION );
 			glPushMatrix();
 			glLoadIdentity();
-			gluOrtho2D( -1.0f, 1.0f, -1.0f, 1.0f );
+			//gluOrtho2D( -1.0f, 1.0f, -1.0f, 1.0f );
+			gluOrtho2D( 0.0f, iWidth, 0.0f, iHeight);
+			//gluOrtho2D( 0.0f, iWidth, 0.0f, iHeight );
 		
 			glMatrixMode( GL_MODELVIEW );
 			glPushMatrix();
 			glLoadIdentity();
+			glEnable( target );
+			
 	}
 
-	glEnable( target );
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(target, textureId);
+	//glActiveTexture(GL_TEXTURE1);
+	//glBindTexture(target, textureId);
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(target, textureId);
+	//glActiveTexture(GL_TEXTURE3);
+	//glBindTexture(target, textureId);
+
 	glBindTexture(target, textureId);
-
 	glBegin(GL_QUADS);
-	glMultiTexCoord2f(GL_TEXTURE0, -0.5, -0.5);
-	glMultiTexCoord2f(GL_TEXTURE1,  0.5, -0.5);
-	glMultiTexCoord2f(GL_TEXTURE2, -0.5,  0.5);
-	glMultiTexCoord2f(GL_TEXTURE3,  0.5,  0.5);
-	glVertex2f( -1.0f, -1.0f );
+	//glMultiTexCoord2f(GL_TEXTURE0, -0.5, -0.5);
+	//glMultiTexCoord2f(GL_TEXTURE1,  0.5, -0.5);
+	//glMultiTexCoord2f(GL_TEXTURE2, -0.5,  0.5);
+	//glMultiTexCoord2f(GL_TEXTURE3,  0.5,  0.5);
+	////glVertex2f( -1.0f, -1.0f );
+	//glVertex2f( 0, 0 );
 
-	glMultiTexCoord2f(GL_TEXTURE0, 2*static_cast<GLfloat>(width)-0.5, -0.5);
-	glMultiTexCoord2f(GL_TEXTURE1, 2*static_cast<GLfloat>(width)+0.5, -0.5);
-	glMultiTexCoord2f(GL_TEXTURE2, 2*static_cast<GLfloat>(width)-0.5,  0.5);
-	glMultiTexCoord2f(GL_TEXTURE3, 2*static_cast<GLfloat>(width)+0.5,  0.5);
-	glVertex2f( 1.0f, -1.0f );
+	//glMultiTexCoord2f(GL_TEXTURE0, 2*static_cast<GLfloat>(width)-0.5, -0.5);
+	//glMultiTexCoord2f(GL_TEXTURE1, 2*static_cast<GLfloat>(width)+0.5, -0.5);
+	//glMultiTexCoord2f(GL_TEXTURE2, 2*static_cast<GLfloat>(width)-0.5,  0.5);
+	//glMultiTexCoord2f(GL_TEXTURE3, 2*static_cast<GLfloat>(width)+0.5,  0.5);
+	////glVertex2f( 1.0f, -1.0f );
+	//glVertex2f( width, 0 );
 
-	glMultiTexCoord2f(GL_TEXTURE0, 2*static_cast<GLfloat>(width)-0.5, 
-		2*static_cast<GLfloat>(height)-0.5);
-	glMultiTexCoord2f(GL_TEXTURE1, 2*static_cast<GLfloat>(width)+0.5, 
-		2*static_cast<GLfloat>(height)-0.5);
-	glMultiTexCoord2f(GL_TEXTURE2, 2*static_cast<GLfloat>(width)-0.5, 
-		2*static_cast<GLfloat>(height)+0.5);
-	glMultiTexCoord2f(GL_TEXTURE3, 2*static_cast<GLfloat>(width)+0.5, 
-		2*static_cast<GLfloat>(height)+0.5);
-	glVertex2f( 1.0f, 1.0f );
+	//glMultiTexCoord2f(GL_TEXTURE0, 2*static_cast<GLfloat>(width)-0.5, 
+	//	2*static_cast<GLfloat>(height)-0.5);
+	//glMultiTexCoord2f(GL_TEXTURE1, 2*static_cast<GLfloat>(width)+0.5, 
+	//	2*static_cast<GLfloat>(height)-0.5);
+	//glMultiTexCoord2f(GL_TEXTURE2, 2*static_cast<GLfloat>(width)-0.5, 
+	//	2*static_cast<GLfloat>(height)+0.5);
+	//glMultiTexCoord2f(GL_TEXTURE3, 2*static_cast<GLfloat>(width)+0.5, 
+	//	2*static_cast<GLfloat>(height)+0.5);
+	////glVertex2f( 1.0f, 1.0f );
+	//glVertex2f( width, height );
 
-	glMultiTexCoord2f(GL_TEXTURE0, 2*static_cast<GLfloat>(width)-0.5, 
-		2*static_cast<GLfloat>(height)-0.5);
-	glMultiTexCoord2f(GL_TEXTURE1, 2*static_cast<GLfloat>(width)+0.5, 
-		2*static_cast<GLfloat>(height)-0.5);
-	glMultiTexCoord2f(GL_TEXTURE2, 2*static_cast<GLfloat>(width)-0.5, 
-		2*static_cast<GLfloat>(height)+0.5);
-	glMultiTexCoord2f(GL_TEXTURE3, 2*static_cast<GLfloat>(width)+0.5, 
-		2*static_cast<GLfloat>(height)+0.5);
-	glVertex2f( -1.0f, 1.0f );
+	//glMultiTexCoord2f(GL_TEXTURE0, 2*static_cast<GLfloat>(width)-0.5, 
+	//	2*static_cast<GLfloat>(height)-0.5);
+	//glMultiTexCoord2f(GL_TEXTURE1, 2*static_cast<GLfloat>(width)+0.5, 
+	//	2*static_cast<GLfloat>(height)-0.5);
+	//glMultiTexCoord2f(GL_TEXTURE2, 2*static_cast<GLfloat>(width)-0.5, 
+	//	2*static_cast<GLfloat>(height)+0.5);
+	//glMultiTexCoord2f(GL_TEXTURE3, 2*static_cast<GLfloat>(width)+0.5, 
+	//	2*static_cast<GLfloat>(height)+0.5);
+	////glVertex2f( -1.0f, 1.0f );
+	//glVertex2f( 0, height );
+
+	/*
+	 *
+	 */
+
+	//glTexCoord2f(-0.5, -0.5); 
+	//glVertex3f(-1, -1, -0.5f);
+
+	//glTexCoord2f(2*width - 0.5, 0);
+	//glVertex3f( 1, -1, -0.5f);
+
+	//glTexCoord2f(2*width - 0.5, 2*height - 0.5);
+	//glVertex3f( 1,  1, -0.5f);
+
+	//glTexCoord2f(0, 2*height - 0.5);
+	//glVertex3f(-1,  1, -0.5f);
+
+
+	glVertex2f(0.0, 0.0);
+	glVertex2f(width, 0.0);
+	glVertex2f(width, height);
+	glVertex2f(0.0, height);
 	
 	glEnd();
 	glPopMatrix();
 
-	/************************************************************************/
-	/* CAN PASS THIS TO OUTSIDE, MORE EFFICIENT TO JUST CALL ONCE           */
-	/************************************************************************/
+	///************************************************************************/
+	///* CAN PASS THIS TO OUTSIDE, MORE EFFICIENT TO JUST CALL ONCE           */
+	///************************************************************************/
 	{
 		glMatrixMode( GL_PROJECTION );
 		glPopMatrix();
