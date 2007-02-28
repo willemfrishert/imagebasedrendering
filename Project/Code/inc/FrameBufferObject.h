@@ -12,6 +12,7 @@ public:
 
 	void attachTexture(GLuint texture, GLenum attachment, GLenum textarget, GLint mipmapLevel);
 	void attachDepthBuffer(GLuint depthBufferId);
+	void attachDepthRenderBuffer(GLuint aWidth, GLuint aHeight);
 
 	void bind();
 	static void unbind();
