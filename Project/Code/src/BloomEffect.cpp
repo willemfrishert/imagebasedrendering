@@ -79,16 +79,16 @@ void BloomEffect::InitTextures()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iImageBlurWidth, iImageBlurHeight, 0, GL_RGBA, GL_FLOAT, NULL);
 
-	//glBindTexture(GL_TEXTURE_2D, iFinalBlurredTexture);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iImageBlurWidth, iImageBlurHeight, 0, GL_RGBA, GL_FLOAT, NULL);
+	glBindTexture(GL_TEXTURE_2D, iFinalBlurredTexture);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iImageBlurWidth, iImageBlurHeight, 0, GL_RGBA, GL_FLOAT, NULL);
 
 	//iIntermediateFBO->attachDepthBuffer( depthBufferId );
 	iIntermediateFBO->attachTexture(iHorizBlurredTexture, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, 0);
-	//iIntermediateFBO->attachTexture(iFinalBlurredTexture, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, 0);
+	iIntermediateFBO->attachTexture(iFinalBlurredTexture, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, 0);
 
 	//glBindTexture(GL_TEXTURE_RECTANGLE_ARB, iHorizBlurredTexture);
 	//glTexParameterf(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -143,52 +143,52 @@ void BloomEffect::InitShaders()
 	iHorizontalBlurFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/horizBlur.frag");
 
 	//iVerticalBlurVertexShader = new ShaderObject(GL_VERTEX_SHADER, "./shader/vertBlur.vert");
-	//iVerticalBlurFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/vertBlur.frag");
+	iVerticalBlurFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/vertBlur.frag");
 
 	//iBlenderVertexShader = new ShaderObject(GL_VERTEX_SHADER, "./shader/glowblender.vert");
 	//iBlenderFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/glowblender.frag");
 
 	iHorizontalShaderProgram = new ShaderProgram();
-	//iVerticalShaderProgram = new ShaderProgram();
+	iVerticalShaderProgram = new ShaderProgram();
 	//iBlenderShaderProgram = new ShaderProgram();
 
 	//iHorizontalShaderProgram->attachShader( *iHorizontalBlurVertexShader );
 	iHorizontalShaderProgram->attachShader( *iHorizontalBlurFragmentShader );
 
 	//iVerticalShaderProgram->attachShader( *iVerticalBlurVertexShader );
-	//iVerticalShaderProgram->attachShader( *iVerticalBlurFragmentShader );
+	iVerticalShaderProgram->attachShader( *iVerticalBlurFragmentShader );
 
 	//iBlenderShaderProgram->attachShader( *iBlenderVertexShader );
 	//iBlenderShaderProgram->attachShader( *iBlenderFragmentShader );
 
-	//iTextureOriginalUniform.setValue( 0 );
-	//iTextureOriginalUniform.setName("originalTexture");
+	iTextureOriginalUniform.setValue( 0 );
+	iTextureOriginalUniform.setName("originalTexture");
 
-	//iTextureHorizontalUniform.setValue( 0 );
-	//iTextureHorizontalUniform.setName("originalTexture");
+	iTextureHorizontalUniform.setValue( 0 );
+	iTextureHorizontalUniform.setName("originalTexture");
 
-	//iTextureOriginalSizeUniform.setValue( 128 );
-	//iTextureOriginalSizeUniform.setName("textureSize");
+	iMipmapSizeUniform.setValue( 32 );
+	iMipmapSizeUniform.setName("mipmapSize");
 
-	//iTextureHorizontalSizeUniform.setValue( 128 );
-	//iTextureHorizontalSizeUniform.setName("textureSize");
+	iHorizTextureSizeUniform.setValue( 128 );
+	iHorizTextureSizeUniform.setName("mipmapSize");
 
 	//iBlenderTextureUniform.setValue( 1 );
 	//iBlenderTextureUniform.setName("originalTex");
 
-	//iMipmapLevelUniform.setName("level");
-	//iMipmapLevelUniform.setValue( 2.0f );
+	iMipmapLevelUniform.setName("mipmapLevel");
+	iMipmapLevelUniform.setValue( 4.0f );
 
 	//iBlurDeltaUniform.setName("delta");
 	//iBlurDeltaUniform.setValue( 0.01f );
 
-	//iHorizontalShaderProgram->addUniformObject( &iTextureOriginalUniform );
-	//iHorizontalShaderProgram->addUniformObject( &iTextureOriginalSizeUniform );
-	//iHorizontalShaderProgram->addUniformObject( &iMipmapLevelUniform );
+	iHorizontalShaderProgram->addUniformObject( &iTextureOriginalUniform );
+	iHorizontalShaderProgram->addUniformObject( &iMipmapSizeUniform );
+	iHorizontalShaderProgram->addUniformObject( &iMipmapLevelUniform );
 	//iHorizontalShaderProgram->addUniformObject( &iBlurDeltaUniform );
 
-	//iVerticalShaderProgram->addUniformObject( &iTextureHorizontalUniform );
-	//iVerticalShaderProgram->addUniformObject( &iTextureHorizontalSizeUniform );
+	iVerticalShaderProgram->addUniformObject( &iTextureHorizontalUniform );
+	iVerticalShaderProgram->addUniformObject( &iHorizTextureSizeUniform );
 	//iVerticalShaderProgram->addUniformObject( &iTextureUniform );
 	//iVerticalShaderProgram->addUniformObject( &iBlurDeltaUniform );
 
@@ -196,7 +196,7 @@ void BloomEffect::InitShaders()
 	//iBlenderShaderProgram->addUniformObject( &iBlenderTextureUniform );
 
 	iHorizontalShaderProgram->buildProgram();
-	//iVerticalShaderProgram->buildProgram();
+	iVerticalShaderProgram->buildProgram();
 	//iBlenderShaderProgram->buildProgram();
 }
 
@@ -235,24 +235,28 @@ void BloomEffect::End()
 	glBindTexture( GL_TEXTURE_2D, iOriginalTexture );
 	glGenerateMipmapEXT( GL_TEXTURE_2D );
 
+	//generate blurred images using the mipmaps
+    // viewportSize = textureSize = 32;
+	// mipmap level = 4;
+	// upscale = 0.25
+	GLint mipmapSize = 32;
+	GLfloat mipmapLevel = 4.0f;
+	GLfloat upscale = 0.25;
 
-	//GLuint viewPortSize = 8;
+	BlurMipmap( iOriginalTexture, mipmapSize, GL_COLOR_ATTACHMENT0_EXT, iImageWinWidth, iImageWinHeight );
 
-	// generate blurred images using the mipmaps
-	//GenerateBlurredImage( iOriginalTexture, GL_TEXTURE_2D, viewPortSize, viewPortSize, GL_COLOR_ATTACHMENT0_EXT, iImageWinWidth, iImageWinHeight );
+	//glViewport( 0, 0, 32, 32 );
 
-	glViewport( 0, 0, 32, 32 );
+	//iIntermediateFBO->bind();
+	////connect the horizontal texture
+	//glDrawBuffer( GL_COLOR_ATTACHMENT0_EXT );
 
-	iIntermediateFBO->bind();
-	//connect the horizontal texture
-	glDrawBuffer( GL_COLOR_ATTACHMENT0_EXT );
+	//glClearColor(0.0f, 0.0f, 0.0f, 1.0);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	iHorizontalShaderProgram->useProgram();
-		RenderSceneOnQuad( iOriginalTexture, GL_TEXTURE_2D, 512, 512 );
-	iHorizontalShaderProgram->disableProgram();
+	//iHorizontalShaderProgram->useProgram();
+	//	RenderSceneOnQuad( iOriginalTexture );
+	//iHorizontalShaderProgram->disableProgram();
 
 	FrameBufferObject::unbind();
 
@@ -264,23 +268,23 @@ void BloomEffect::End()
 
 	//UpscaleTexture(iOriginalTexture, GL_TEXTURE_2D, 128, 128);
 	//RenderSceneOnQuad( iUpscaledTexture[0] );
-	UpscaleTexture( iHorizBlurredTexture, GL_TEXTURE_2D, 512, 512 );
+	//UpscaleTexture( iHorizBlurredTexture, 0.25 );
+	//UpscaleTexture(iFinalBlurredTexture, 0.25);
 	//RenderSceneOnQuad( iHorizBlurredTexture, GL_TEXTURE_RECTANGLE_ARB, iOldViewPort[2], iOldViewPort[3] );
 	//RenderSceneOnQuad( iFinalBlurredTexture, GL_TEXTURE_RECTANGLE_ARB, iOldViewPort[2], iOldViewPort[3] );
 	//RenderSceneOnQuad( iHorizBlurredTexture, 128,128 );
 
+	UpscaleTexture(iFinalBlurredTexture, 0.25);
 	//RenderSceneOnQuad( iFinalBlurredTexture );
 }
 
-void BloomEffect::GenerateBlurredImage(GLuint aTextureID,
-									   GLenum aTextureMode,
-									   GLuint aWidth,
-									   GLuint aHeight,
-									   GLenum aDestinationMode,
-									   GLuint aDestinationWidth,
-									   GLuint aDestinationHeight)
+void BloomEffect::BlurMipmap(GLuint aTextureID,
+							 GLuint aMipmapSize,
+							 GLenum aDestinationMode,
+							 GLuint aDestinationWidth,
+							 GLuint aDestinationHeight)
 {
-	glViewport(0, 0, aWidth, aHeight);
+	glViewport(0, 0, aMipmapSize, aMipmapSize);
 
 	iIntermediateFBO->bind();
 	//connect the horizontal texture
@@ -290,22 +294,26 @@ void BloomEffect::GenerateBlurredImage(GLuint aTextureID,
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	iHorizontalShaderProgram->useProgram();
-	RenderSceneOnQuad( aTextureID, aTextureMode, aWidth, aHeight );
+	RenderSceneOnQuad( aTextureID );
 	iHorizontalShaderProgram->disableProgram();
 
 	//GLfloat pixels[8*8*4];
 	//glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
 	//glReadPixels(0,0,aWidth, aHeight, GL_RGBA, GL_FLOAT, pixels);
 
-	////connect the vertical texture
-	//glDrawBuffer( GL_COLOR_ATTACHMENT1_EXT );
+	// resize the view port to the total size of the horizontal blurred image
+	glViewport(0, 0, iImageBlurWidth, iImageBlurHeight);
 
-	//glClearColor(0.0f, 0.0f, 0.0f, 1.0);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//connect the vertical texture
+	glDrawBuffer( GL_COLOR_ATTACHMENT1_EXT );
 
-	//iVerticalShaderProgram->useProgram();
-	//RenderSceneOnQuad( iHorizBlurredTexture );
-	//iVerticalShaderProgram->disableProgram();
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	iVerticalShaderProgram->useProgram();
+		UpscaleTexture(iHorizBlurredTexture, 0.25);
+//		RenderSceneOnQuad( iHorizBlurredTexture );
+	iVerticalShaderProgram->disableProgram();
 
 	//// upscale blurred image
 	//iFinalBlurFBO->bind();
@@ -322,57 +330,33 @@ void BloomEffect::GenerateBlurredImage(GLuint aTextureID,
 	FrameBufferObject::unbind();
 }
 
-void BloomEffect::RenderSceneOnQuad( GLuint aTextureID, GLenum aTextureMode, GLdouble aWidth, GLdouble aHeight )
+void BloomEffect::RenderSceneOnQuad( GLuint aTextureID )
 {
 	glMatrixMode( GL_PROJECTION );
 	glPushMatrix();
 	glLoadIdentity();
-	//gluOrtho2D( -1.1f, 1.1f, -1.1f, 1.1f );
-	gluOrtho2D( 0, aWidth, 0, aHeight );
-	//gluOrtho2D( 0, aWidth, 0, aHeight );
+	gluOrtho2D( -1.0f, 1.0f, -1.0f, 1.0f );
 
 	glMatrixMode( GL_MODELVIEW );
 	glPushMatrix();
 	glLoadIdentity();
 
-	glEnable( aTextureMode );
-	glBindTexture( aTextureMode, aTextureID );
+	glEnable( GL_TEXTURE_2D );
+	glBindTexture( GL_TEXTURE_2D, aTextureID );
 
-	if (GL_TEXTURE_RECTANGLE_ARB == aTextureMode)
-	{
-		//RENDER MULTITEXTURE ON QUAD
-		glBegin(GL_QUADS);
-		glTexCoord2i( 0, 0 );
-		glVertex2f( 0, 0 );
+	glBegin(GL_QUADS);
+	glTexCoord2f( 0, 0 );
+	glVertex2f( -1, -1 );
 
-		glTexCoord2i( aWidth, 0 );
-		glVertex2f( aWidth, 0 );
+	glTexCoord2f( 1, 0 );
+	glVertex2f( 1, -1 );
 
-		glTexCoord2i( aWidth, aHeight );
-		glVertex2f( aWidth, aHeight );
+	glTexCoord2f( 1, 1 );
+	glVertex2f( 1, 1 );
 
-		glTexCoord2i( 0, aHeight );
-		glVertex2f( 0, aHeight );
-		glEnd();
-	}
-
-	if (GL_TEXTURE_2D == aTextureMode)
-	{
-		glBegin(GL_QUADS);
-		glTexCoord2f( 0, 0 );
-		glVertex2f( 0, 0 );
-	
-		glTexCoord2f( 1, 0 );
-		glVertex2f( aWidth, 0 );
-	
-		glTexCoord2f( 1, 1 );
-		glVertex2f( aWidth, aHeight );
-	
-		glTexCoord2f( 0, 1 );
-		glVertex2f( 0, aHeight );
-		glEnd();
-	}
-
+	glTexCoord2f( 0, 1 );
+	glVertex2f( -1, 1 );
+	glEnd();
 
 	glPopMatrix();
 
@@ -382,36 +366,32 @@ void BloomEffect::RenderSceneOnQuad( GLuint aTextureID, GLenum aTextureMode, GLd
 	glMatrixMode( GL_MODELVIEW );
 }
 
-void BloomEffect::UpscaleTexture( GLuint aTextureID, GLenum aTextureMode, GLdouble aWidth, GLdouble aHeight )
+void BloomEffect::UpscaleTexture( GLuint aTextureID, GLfloat aTextureCoord )
 {
 	glMatrixMode( GL_PROJECTION );
 	glPushMatrix();
 	glLoadIdentity();
-	//gluOrtho2D( -1.1f, 1.1f, -1.1f, 1.1f );
-	gluOrtho2D( 0, aWidth, 0, aHeight );
-	//gluOrtho2D( 0, aWidth, 0, aHeight );
+	gluOrtho2D( -1.0f, 1.0f, -1.0f, 1.0f );
 
 	glMatrixMode( GL_MODELVIEW );
 	glPushMatrix();
 	glLoadIdentity();
 
-	glEnable( aTextureMode );
-	glBindTexture( aTextureMode, aTextureID );
-
-	GLfloat texCoord = 0.25;
+	glEnable( GL_TEXTURE_2D );
+	glBindTexture( GL_TEXTURE_2D, aTextureID );
 
 	glBegin(GL_QUADS);
 	glTexCoord2f( 0, 0 );
-	glVertex2f( 0, 0 );
+	glVertex2f( -1, -1 );
 
-	glTexCoord2f( texCoord, 0 );
-	glVertex2f( aWidth, 0 );
+	glTexCoord2f( aTextureCoord, 0 );
+	glVertex2f( 1, -1 );
 
-	glTexCoord2f( texCoord, texCoord );
-	glVertex2f( aWidth, aHeight );
+	glTexCoord2f( aTextureCoord, aTextureCoord );
+	glVertex2f( 1, 1 );
 
-	glTexCoord2f( 0, texCoord );
-	glVertex2f( 0, aHeight );
+	glTexCoord2f( 0, aTextureCoord );
+	glVertex2f( -1, 1 );
 	glEnd();
 
 
@@ -423,40 +403,4 @@ void BloomEffect::UpscaleTexture( GLuint aTextureID, GLenum aTextureMode, GLdoub
 	glMatrixMode( GL_MODELVIEW );
 }
 
-//void BloomEffect::RenderSceneOnQuad( GLuint aTextureID )
-//{
-//	glMatrixMode( GL_PROJECTION );
-//	glPushMatrix();
-//	glLoadIdentity();
-//	//gluOrtho2D( -1.1f, 1.1f, -1.1f, 1.1f );
-//	gluOrtho2D( -1, 1, -1, 1 );
-//
-//	glMatrixMode( GL_MODELVIEW );
-//	glPushMatrix();
-//	glLoadIdentity();
-//
-//	glEnable( GL_TEXTURE_2D );
-//	glBindTexture( GL_TEXTURE_2D, aTextureID );
-//
-//	//RENDER MULTITEXTURE ON QUAD
-//	glBegin(GL_QUADS);
-//	glTexCoord2i( 0, 0 );
-//	glVertex2f( -1.0f, -1.0f );
-//
-//	glTexCoord2i( 1, 0 );
-//	glVertex2f( 1.0f, -1.0f );
-//
-//	glTexCoord2i( 1, 1 );
-//	glVertex2f( 1.0f, 1.0f );
-//
-//	glTexCoord2i( 0, 1 );
-//	glVertex2f( -1.0f, 1.0f );
-//	glEnd();
-//
-//	glPopMatrix();
-//
-//	glMatrixMode( GL_PROJECTION );
-//	glPopMatrix();
-//
-//	glMatrixMode( GL_MODELVIEW );
-//}
+
