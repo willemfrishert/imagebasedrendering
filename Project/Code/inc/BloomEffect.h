@@ -21,16 +21,14 @@ private:
 	void InitFramebufferObject();
 	void InitShaders();
 
-	void GenerateBlurredImage(GLuint aTextureID,
-							  GLenum aTextureMode,
-							  GLuint aWidth,
-							  GLuint aHeight,
-							  GLenum aDestinationMode,
-							  GLuint aDestinationWidth,
-							  GLuint aDestinationHeight);
+	void BlurMipmap(GLuint aTextureID,
+					GLuint aMipmapSize,
+					GLenum aDestinationMode,
+					GLuint aDestinationWidth,
+					GLuint aDestinationHeight);
 
-	void RenderSceneOnQuad( GLuint aTextureID,  GLenum aTextureMode, GLdouble aWidth, GLdouble aHeight );
-	void UpscaleTexture( GLuint aTextureID,  GLenum aTextureMode, GLdouble aWidth, GLdouble aHeight );
+	void RenderSceneOnQuad( GLuint aTextureID);
+	void UpscaleTexture( GLuint aTextureID, GLfloat aTextureCoord );
 
 	FrameBufferObject* iOriginalFBO;
 	FrameBufferObject* iIntermediateFBO;
@@ -65,8 +63,8 @@ private:
 
 	ShaderUniformValue<int> iTextureOriginalUniform;
 	ShaderUniformValue<int> iTextureHorizontalUniform;
-	ShaderUniformValue<int> iTextureOriginalSizeUniform;
-	ShaderUniformValue<int> iTextureHorizontalSizeUniform;
+	ShaderUniformValue<int> iMipmapSizeUniform;
+	ShaderUniformValue<int> iHorizTextureSizeUniform;
 	ShaderUniformValue<int> iBlenderTextureUniform;
 	ShaderUniformValue<float> iBlurDeltaUniform;
 	ShaderUniformValue<float> iMipmapLevelUniform;
