@@ -9,6 +9,11 @@
 #include "ShaderObject.h"
 #include "ExtensionsLoader.h"
 
+ShaderObject::ShaderObject(GLenum shaderType, string filename)
+{
+	init(filename.c_str(), shaderType);
+}
+
 ShaderObject::ShaderObject(GLenum shaderType, char* filename)
 {
 	init(filename, shaderType);
@@ -33,7 +38,7 @@ GLuint ShaderObject::getShaderId() const
  * @param filename
  * @param shaderType
  */
-void ShaderObject::init(char* filename, GLenum shaderType)
+void ShaderObject::init(const char* filename, GLenum shaderType)
 {
 	unsigned char *shaderAssembly;
 
