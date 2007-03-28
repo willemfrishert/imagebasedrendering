@@ -6,9 +6,12 @@
  */
 #pragma once
 #include "Basic.h"
+
+
 class ShaderObject
 {
 public:
+	ShaderObject(GLenum shaderType, string filename);
 	ShaderObject(GLenum shaderType, char* filename);
 	~ShaderObject(void);
 
@@ -16,7 +19,7 @@ public:
 
 private:
 	unsigned char* readShaderFile(const char *filename);
-	void init(char* filename, GLenum shaderType);
+	void init(const char* filename, GLenum shaderType);
 
 	// attributes
 private:
