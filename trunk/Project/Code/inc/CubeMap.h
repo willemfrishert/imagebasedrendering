@@ -15,6 +15,7 @@ public:
 	~CubeMap();
 
 	void setupCubeMap(string filenamePrefix);
+	void setupCompressedCubeMap(string filenamePrefix, unsigned char& minExponent, unsigned char& maxExponent);
 
 	void render(float* inverseTransMatrix);
 
@@ -23,19 +24,21 @@ private:
 
 	void extractFaces(float** columns, int height, int width);
 
+	void extractFaces(unsigned char** columns, int height, int width);
+
 	// attributes
 private:
 	/*
 	 * Cubemap textures
 	 */
-	float* positiveX;
-	float* negativeX;
+	void* positiveX;
+	void* negativeX;
 	
-	float* positiveY;
-	float* negativeY;
+	void* positiveY;
+	void* negativeY;
 	
-	float* positiveZ;
-	float* negativeZ;
+	void* positiveZ;
+	void* negativeZ;
 
 	/**
 	 * @description 
