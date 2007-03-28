@@ -56,7 +56,7 @@ CubeMap::CubeMap(GLint nChannels, GLsizei aImageSize /* = 256 */)
 {
 	if (nChannels == 3)
 	{
-		this->format = GL_RGB;
+		this->format = GL_RGB16;
 	}
 	else
 	{
@@ -111,6 +111,12 @@ void CubeMap::render( float* inverseTransMatrix )
 		glMatrixMode(GL_MODELVIEW);
 	}
 	glPopMatrix(); // Modelview
+
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_GEN_R);
+	glDisable(GL_TEXTURE_CUBE_MAP);   
+	glDisable(GL_AUTO_NORMAL);
 }
 
 void CubeMap::extractFaces(float **columns, int height, int width)
@@ -122,18 +128,124 @@ void CubeMap::extractFaces(float **columns, int height, int width)
 	this->negativeY = new float[imageSize * imageSize * channels];
 	this->negativeZ = new float[imageSize * imageSize * channels];
 
+	float* pX = static_cast<float*>(this->positiveX);
+	float* pY = static_cast<float*>(this->positiveY);
+	float* pZ = static_cast<float*>(this->positiveZ);
+	float* nX = static_cast<float*>(this->negativeX);
+	float* nY = static_cast<float*>(this->negativeY);
+	float* nZ = static_cast<float*>(this->negativeZ);
+
 	for (int i = 0; i < imageSize; i++)
 	{
 		int index	= i * width * channels;
 		int index2	= (imageSize - i - 1) * imageSize * channels;
 
 		// Face copy
-		memcpy(&(positiveY[index2]), &columns[0][index], sizeof(float) * imageSize * channels);
-		memcpy(&(positiveZ[index2]), &columns[1][index], sizeof(float) * imageSize * channels);
-		memcpy(&(negativeX[index2]), &columns[2][index], sizeof(float) * imageSize * channels);
-		memcpy(&(positiveX[index2]), &columns[3][index], sizeof(float) * imageSize * channels);
-		memcpy(&(negativeY[index2]), &columns[4][index], sizeof(float) * imageSize * channels);
-		memcpy(&(negativeZ[index2]), &columns[5][index], sizeof(float) * imageSize * channels);
+		//memcpy(&(positiveY[index2]), &columns[0][index], sizeof(float) * imageSize * channels);
+		//memcpy(&(positiveZ[index2]), &columns[1][index], sizeof(float) * imageSize * channels);
+		//memcpy(&(negativeX[index2]), &columns[2][index], sizeof(float) * imageSize * channels);
+		//memcpy(&(positiveX[index2]), &columns[3][index], sizeof(float) * imageSize * channels);
+		//memcpy(&(negativeY[index2]), &columns[4][index], sizeof(float) * imageSize * channels);
+		//memcpy(&(negativeZ[index2]), &columns[5][index], sizeof(float) * imageSize * channels);
+
+		memcpy(&(pY[index2]), &columns[0][index], sizeof(float) * imageSize * channels);
+		memcpy(&(pZ[index2]), &columns[1][index], sizeof(float) * imageSize * channels);
+		memcpy(&(nX[index2]), &columns[2][index], sizeof(float) * imageSize * channels);
+		memcpy(&(pX[index2]), &columns[3][index], sizeof(float) * imageSize * channels);
+		memcpy(&(nY[index2]), &columns[4][index], sizeof(float) * imageSize * channels);
+		memcpy(&(nZ[index2]), &columns[5][index], sizeof(float) * imageSize * channels);
+
+	}
+}
+
+void CubeMap::extractFaces(unsigned char **columns, int height, int width)
+{
+	this->positiveX = new unsigned char[imageSize * imageSize * channels];
+	this->positiveY = new unsigned char[imageSize * imageSize * channels];
+	this->positiveZ = new unsigned char[imageSize * imageSize * channels];
+	this->negativeX = new unsigned char[imageSize * imageSize * channels];
+	this->negativeY = new unsigned char[imageSize * imageSize * channels];
+	this->negativeZ = new unsigned char[imageSize * imageSize * channels];
+
+	unsigned char* pX = static_cast<unsigned char*>(this->positiveX);
+	unsigned char* pY = static_cast<unsigned char*>(this->positiveY);
+	unsigned char* pZ = static_cast<unsigned char*>(this->positiveZ);
+	unsigned char* nX = static_cast<unsigned char*>(this->negativeX);
+	unsigned char* nY = static_cast<unsigned char*>(this->negativeY);
+	unsigned char* nZ = static_cast<unsigned char*>(this->negativeZ);
+
+	for (int i = 0; i < imageSize; i++)
+	{
+		int index	= i * width * channels;
+		int index2	= (imageSize - i - 1) * imageSize * channels;
+
+		memcpy(&(pY[index2]), &columns[0][index], sizeof(unsigned char) * imageSize * channels);
+		memcpy(&(pZ[index2]), &columns[1][index], sizeof(unsigned char) * imageSize * channels);
+		memcpy(&(nX[index2]), &columns[2][index], sizeof(unsigned char) * imageSize * channels);
+		memcpy(&(pX[index2]), &columns[3][index], sizeof(unsigned char) * imageSize * channels);
+		memcpy(&(nY[index2]), &columns[4][index], sizeof(unsigned char) * imageSize * channels);
+		memcpy(&(nZ[index2]), &columns[5][index], sizeof(unsigned char) * imageSize * channels);
+
+	}
+}
+
+void CubeMap::setupCompressedCubeMap(string filenamePrefix, 
+									 unsigned char& minExponent, unsigned char& maxExponent)
+{
+	HDRLoaderResultEncoded hdrPic;
+	unsigned char** faces = (unsigned char**)malloc(sizeof(int) * 6);
+
+	minExponent = 255;
+	maxExponent = 1;
+	for (int i = 0; i < 6; i++)
+	{
+		HDRLoader::load((filenamePrefix + suffixes[i]).c_str(), hdrPic);
+		faces[i] = hdrPic.cols;
+
+		minExponent = hdrPic.minExponent < minExponent ? hdrPic.minExponent : minExponent;
+		maxExponent = hdrPic.maxExponent > maxExponent ? hdrPic.maxExponent : maxExponent;
+	}
+
+	extractFaces(faces, hdrPic.height, hdrPic.width);
+
+	for (int i = 0; i < 6; i++)
+	{
+		delete []faces[i];
+	}
+
+	if (positiveX != NULL && positiveY != NULL && positiveZ != NULL &&
+		negativeX != NULL && negativeY != NULL && negativeZ != NULL)
+	{
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+		// Specify the 6 sides of the cube
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, imageSize, 
+			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, positiveX);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, imageSize, 
+			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, negativeX);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, imageSize,
+			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, positiveY);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, imageSize,
+			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, negativeY);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, imageSize,
+			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, positiveZ);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, imageSize,
+			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, negativeZ);
+
+		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+		glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP); 
+		//glEnable(GL_TEXTURE_GEN_S);
+		//glEnable(GL_TEXTURE_GEN_T);
+		//glEnable(GL_TEXTURE_GEN_R);
+
+		//glEnable(GL_TEXTURE_CUBE_MAP);   
+		//glEnable(GL_AUTO_NORMAL);
 	}
 }
 
@@ -166,17 +278,17 @@ void CubeMap::setupCubeMap(string filenamePrefix)
 
 		// Specify the 6 sides of the cube
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, imageSize, 
-			imageSize, 0, format, GL_FLOAT, positiveX);
+			imageSize, 0, GL_RGB, GL_FLOAT, positiveX);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format, imageSize, 
-			imageSize, 0, format, GL_FLOAT, negativeX);
+			imageSize, 0, GL_RGB, GL_FLOAT, negativeX);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, format, imageSize,
-			imageSize, 0, format, GL_FLOAT, positiveY);
+			imageSize, 0, GL_RGB, GL_FLOAT, positiveY);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, format, imageSize,
-			imageSize, 0, format, GL_FLOAT, negativeY);
+			imageSize, 0, GL_RGB, GL_FLOAT, negativeY);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, format, imageSize,
-			imageSize, 0, format, GL_FLOAT, positiveZ);
+			imageSize, 0, GL_RGB, GL_FLOAT, positiveZ);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, format, imageSize,
-			imageSize, 0, format, GL_FLOAT, negativeZ);
+			imageSize, 0, GL_RGB, GL_FLOAT, negativeZ);
 
 		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
 		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
@@ -185,7 +297,7 @@ void CubeMap::setupCubeMap(string filenamePrefix)
 		glEnable(GL_TEXTURE_GEN_T);
 		glEnable(GL_TEXTURE_GEN_R);
 
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 		glEnable(GL_TEXTURE_CUBE_MAP);   
 		glEnable(GL_AUTO_NORMAL);
