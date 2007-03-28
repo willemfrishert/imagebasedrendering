@@ -11,7 +11,7 @@
 
 
 // specifies the type of uniform variable
-enum VECSIZE {VEC3 = 3, VEC4 = 4};
+enum VECSIZE {VEC2 = 2, VEC3 = 3, VEC4 = 4};
 
 template <class T>
 class ShaderUniformVector: public ShaderUniformObject
@@ -22,7 +22,7 @@ public:
 
 	void setValues(T* values);
 
-	virtual void use() const;
+	virtual void use();
 
 	// attributes
 private:
@@ -61,7 +61,7 @@ void ShaderUniformVector<T>::setValues(T* values)
 }
 
 template <class T>
-void ShaderUniformVector<T>::use() const
+void ShaderUniformVector<T>::use()
 {
 	if ( this->getHasChanged() )
 	{
