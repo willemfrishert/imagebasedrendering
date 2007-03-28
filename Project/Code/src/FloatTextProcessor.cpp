@@ -174,7 +174,7 @@ float FloatTextProcessor::processData()
 	glReadPixels(0, 0, side, side, GL_RGBA, GL_FLOAT, &result);
 
 	// we can draw back to screen again, if we want :)
-	iFbo->unbind();
+	FrameBufferObject::unbind();
 
 	// any component will do: (V, V, V, 1)
 	return result[ 0 ];
