@@ -6,7 +6,7 @@
 #include "ShaderObject.h"
 #include "ShaderUniformValue.h"
 
-const int KNumberOfBlurMaps = 3;
+const int KNumberOfBlurMaps = 4;
 class BloomEffect
 {
 public:
@@ -21,14 +21,12 @@ private:
 	void InitFramebufferObject();
 	void InitShaders();
 
-	void BlurMipmap(GLuint aTextureID,
-					GLuint aMipmapSize,
-					GLenum aDestinationMode,
-					GLuint aDestinationWidth,
-					GLuint aDestinationHeight);
+	void BlurMipmap( GLuint aTextureID,  GLuint aMipmapSize,  GLfloat aMipmapLevel, GLfloat aUpscaleFactor, FrameBufferObject* aFinalFBO );
 
 	void RenderSceneOnQuad( GLuint aTextureID);
+	void RenderSceneOnQuad(  GLuint aOriginalTexture, GLuint* aUpscaledTexture );
 	void UpscaleTexture( GLuint aTextureID, GLfloat aTextureCoord );
+	void RenderBloomEffect(GLuint aOriginalTexture, GLuint* aUpscaledTexture);
 
 	FrameBufferObject* iOriginalFBO;
 	FrameBufferObject* iIntermediateFBO;
@@ -65,7 +63,13 @@ private:
 	ShaderUniformValue<int> iTextureHorizontalUniform;
 	ShaderUniformValue<int> iMipmapSizeUniform;
 	ShaderUniformValue<int> iHorizTextureSizeUniform;
-	ShaderUniformValue<int> iBlenderTextureUniform;
+	
+	ShaderUniformValue<int> iBlenderOriginalTextureUniform;
+	ShaderUniformValue<int> iBlenderBlur1TextureUniform;
+	ShaderUniformValue<int> iBlenderBlur2TextureUniform;
+	ShaderUniformValue<int> iBlenderBlur3TextureUniform;
+	ShaderUniformValue<int> iBlenderBlur4TextureUniform;
+
 	ShaderUniformValue<float> iBlurDeltaUniform;
 	ShaderUniformValue<float> iMipmapLevelUniform;
 
