@@ -28,7 +28,7 @@ void main(void)
 	//fragColor = texture2D(originalTexture, texCoord );
 	gl_FragColor = vec4(fragColor.rgb, 1.0);
 
-	//gl_FragColor = vec4(texture2D(originalTexture, gl_TexCoord[0].xy).rgb, 1.0);
+//	gl_FragColor = vec4(texture2D(originalTexture, gl_TexCoord[0].xy).rgb, 1.0);
 	//DEBUG!!!
 
 	//if (fragCoord.x>64.0)
