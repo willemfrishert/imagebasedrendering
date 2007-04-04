@@ -1,6 +1,9 @@
 #include <gl/glew.h>
 #include <windows.h>
 #include "FrameBufferObject.h"
+#include "ShaderObject.h"
+#include "ShaderUniformValue.h"
+#include "ShaderProgram.h"
 #include "ScreenCapture.h"
 
 static GLenum screenCaptureTexTarget = GL_TEXTURE_2D;
@@ -20,6 +23,28 @@ ScreenCapture::ScreenCapture(int width, int height)
 	/************************************************************************/
 	iCaptureFBO->attachDepthRenderBuffer(width, height);
 	FrameBufferObject::unbind();
+
+
+	/************************************************************************/
+	/*                                                                      */
+	/************************************************************************/
+
+
+	iShaderProgram			= new ShaderProgram();
+	iInputTextureUniform	= new ShaderUniformValue<int>();
+
+	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, "./shader/cubemap.frag");
+
+	// Uniforms
+	iInputTextureUniform->setValue( 0 );
+	iInputTextureUniform->setName("cubeMap");
+
+	iShaderProgram->attachShader( *iFragmentShader );
+	iShaderProgram->addUniformObject( iInputTextureUniform );
+
+	// after all the shaders have been attached
+	iShaderProgram->buildProgram();
+
 }
 
 ScreenCapture::~ScreenCapture(void)
@@ -40,6 +65,8 @@ void ScreenCapture::startCapture()
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//iShaderProgram->useProgram();
 }
 
 
@@ -47,6 +74,8 @@ void ScreenCapture::startCapture()
  */
 GLuint ScreenCapture::stopCapture()
 {
+	//iShaderProgram->disableProgram();
+
 	FrameBufferObject::unbind();
 
 	return iCaptureTexture;
@@ -85,8 +114,8 @@ void ScreenCapture::setupTexture(GLuint textureId, const GLvoid* data, int width
 	glTexParameteri(screenCaptureTexTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	glTexImage2D(screenCaptureTexTarget, 0, GL_RGBA16, width, 
-		height, 0, GL_RGBA, GL_FLOAT, data);
+	glTexImage2D(screenCaptureTexTarget, 0, GL_RGB16, width, 
+		height, 0, GL_RGB, GL_FLOAT, data);
 }
 
 void ScreenCapture::renderSceneOnQuad(GLuint textureId, GLenum target)
