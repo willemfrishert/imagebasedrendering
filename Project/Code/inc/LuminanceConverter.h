@@ -8,6 +8,8 @@ class ShaderUniformValue;
 template <class T>
 class ShaderUniformVector;
 
+typedef GLenum;
+
 class LuminanceConverter
 {
 public:
@@ -41,4 +43,5 @@ private:
 	ShaderObject* iFragmentShader;
 	ShaderUniformValue<int>* iInputTextureUniform;
 	ShaderUniformVector<float>* iScaleBias;
+	static GLenum LUMINANCE_TEXTURE_TARGET;
 };
