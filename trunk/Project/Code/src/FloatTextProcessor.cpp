@@ -23,6 +23,7 @@ FloatTextProcessor::FloatTextProcessor( float* values, int width, int height, st
 : iWidth( width )
 , iHeight( height )
 , internalFormat( texInternalFormat )
+, iOriginalTexture( 0 )
 , format( texFormat )
 {
 	iFbo = new FrameBufferObject();
@@ -35,11 +36,11 @@ FloatTextProcessor::FloatTextProcessor( float* values, int width, int height, st
 	
 }
 
-FloatTextProcessor::FloatTextProcessor(GLuint originalTexId, int width, int height, 
+FloatTextProcessor::FloatTextProcessor(int width, int height, 
 									   string fragmentShaderFilename, GLint texInternalFormat, GLenum texFormat)
 : iWidth( width )
 , iHeight( height )
-, iOriginalTexture( originalTexId )
+, iOriginalTexture( 0 )
 , internalFormat( texInternalFormat )
 , format( texFormat )
 {
@@ -114,11 +115,31 @@ void FloatTextProcessor::setupTexture(GLuint textureId, const GLvoid* data)
 		data);					// Texture data
 }
 
+
+void FloatTextProcessor::setOriginalTexture(GLuint originalTexId)
+{
+	this->iOriginalTexture = originalTexId;
+}
+
+/**
+ * @description just calls the processData() method with
+ * the iOriginalTexture that was set previously
+ * @param result
+ */
+void FloatTextProcessor::processData( float* result )
+{
+	if ( this->iOriginalTexture != 0)
+	{
+		processData(this->iOriginalTexture, result);
+	}
+}
+
 /**
  * @description Processes the Parallel Reduction algorithm given the passed shader
+ * NOTE: result must have allocated space for sizeof(float) * 4
  * @return the result of the algorithm
  */
-float FloatTextProcessor::processData()
+void FloatTextProcessor::processData( GLuint originalTexId, float* result )
 {
 	glViewport(0, 0, iWidth, iHeight);
 
@@ -145,7 +166,7 @@ float FloatTextProcessor::processData()
 		GL_TEXTURE_RECTANGLE_ARB, 0);
 
 	// and finally, draw, and do the computations on the fragment shader
-	renderSceneOnQuad(iOriginalTexture, GL_TEXTURE_RECTANGLE_ARB, 
+	renderSceneOnQuad(originalTexId, GL_TEXTURE_RECTANGLE_ARB, 
 		targetWidth, targetHeight);
 
 	for (int i = 0; targetWidth > 1; i++)
@@ -169,15 +190,11 @@ float FloatTextProcessor::processData()
 	iShaderProgram->disableProgram();
 
 	const int side = 1;
-	GLfloat result[side*side*4];
 	glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
-	glReadPixels(0, 0, side, side, GL_RGBA, GL_FLOAT, &result);
+	glReadPixels(0, 0, side, side, GL_RGBA, GL_FLOAT, result);
 
 	// we can draw back to screen again, if we want :)
 	FrameBufferObject::unbind();
-
-	// any component will do: (V, V, V, 1)
-	return result[ 0 ];
 }
 
 void FloatTextProcessor::renderSceneOnQuad(GLuint textureId, 
