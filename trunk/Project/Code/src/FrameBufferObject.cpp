@@ -8,10 +8,9 @@
 {\
 	GLenum status; \
 	status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); \
-	fprintf(stderr, "%x\n", status);\
 	switch(status) { \
  case GL_FRAMEBUFFER_COMPLETE_EXT: \
- fprintf(stderr,"framebuffer complete!\n");\
+ /*fprintf(stderr,"framebuffer complete!\n");*/\
  break; \
  case GL_FRAMEBUFFER_UNSUPPORTED_EXT: \
  fprintf(stderr,"framebuffer GL_FRAMEBUFFER_UNSUPPORTED_EXT\n");\
