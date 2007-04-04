@@ -13,11 +13,16 @@ public:
 	FloatTextProcessor(float* values, int width, int height, string fragmentShaderFilename, 
 		GLint texInternalFormat = GL_RGB_FLOAT32_ATI, GLenum texFormat = GL_LUMINANCE);
 	
-	FloatTextProcessor(GLuint originalTexId, int width, int height, string fragmentShaderFilename, 
+	FloatTextProcessor(int width, int height, string fragmentShaderFilename, 
 		GLint texInternalFormat = GL_RGB_FLOAT32_ATI, GLenum texFormat = GL_LUMINANCE);
+	
 	~FloatTextProcessor(void);
 
-	float processData();
+	void processData(float* result);
+
+	void processData(GLuint originalTexId, float* result);
+
+	void setOriginalTexture(GLuint originalTexId);
 
 	// methods
 private:
