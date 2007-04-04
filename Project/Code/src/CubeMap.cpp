@@ -56,11 +56,11 @@ CubeMap::CubeMap(GLint nChannels, GLsizei aImageSize /* = 256 */)
 {
 	if (nChannels == 3)
 	{
-		this->format = GL_RGB16;
+		this->format = GL_RGB;
 	}
 	else
 	{
-		this->format = GL_RGBA;
+		this->format = GL_RGBA16;
 	}
 }
 
@@ -219,33 +219,29 @@ void CubeMap::setupCompressedCubeMap(string filenamePrefix,
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
+		GLenum type = GL_UNSIGNED_BYTE;
+		
 		// Specify the 6 sides of the cube
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, imageSize, 
-			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, positiveX);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, imageSize, 
-			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, negativeX);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, imageSize,
-			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, positiveY);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, imageSize,
-			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, negativeY);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, imageSize,
-			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, positiveZ);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, imageSize,
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, imageSize, 
+			imageSize, 0, GL_RGBA, type, positiveX);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format, imageSize, 
+			imageSize, 0, GL_RGBA, type, negativeX);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, format, imageSize,
+			imageSize, 0, GL_RGBA, type, positiveY);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, format, imageSize,
+			imageSize, 0, GL_RGBA, type, negativeY);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, format, imageSize,
+			imageSize, 0, GL_RGBA, type, positiveZ);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, format, imageSize,
 			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, negativeZ);
 
 		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
 		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
 		glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP); 
-		//glEnable(GL_TEXTURE_GEN_S);
-		//glEnable(GL_TEXTURE_GEN_T);
-		//glEnable(GL_TEXTURE_GEN_R);
-
-		//glEnable(GL_TEXTURE_CUBE_MAP);   
-		//glEnable(GL_AUTO_NORMAL);
 	}
 }
 
