@@ -6,6 +6,8 @@
 #include "ShaderProgram.h"
 #include "LuminanceConverter.h"
 
+GLenum LuminanceConverter::LUMINANCE_TEXTURE_TARGET = GL_TEXTURE_RECTANGLE_ARB;
+
 LuminanceConverter::LuminanceConverter(int width, int height, 
 									   int minExponent, int maxExponent)
 : iWidth( width )
@@ -22,7 +24,7 @@ LuminanceConverter::LuminanceConverter(int width, int height,
 	iFbo->bind();
 
 	iFbo->attachTexture(iLuminanceTexture, GL_COLOR_ATTACHMENT0_EXT, 
-		GL_TEXTURE_2D, 0);
+		LUMINANCE_TEXTURE_TARGET, 0);
 
 	FrameBufferObject::unbind();
 
@@ -36,17 +38,17 @@ LuminanceConverter::~LuminanceConverter(void)
 
 void LuminanceConverter::setupTexture(GLuint textureId, const GLvoid* data)
 {
-	glBindTexture(GL_TEXTURE_2D, textureId);
+	glBindTexture(LUMINANCE_TEXTURE_TARGET, textureId);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(LUMINANCE_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(LUMINANCE_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(LUMINANCE_TEXTURE_TARGET, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(LUMINANCE_TEXTURE_TARGET, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	glTexImage2D(GL_TEXTURE_2D,  // Need to use texture rectangle to get GPU-side floats
+	glTexImage2D(LUMINANCE_TEXTURE_TARGET,  // Need to use texture rectangle to get GPU-side floats
 		0,						// Mipmap level 0
-		GL_RGBA,				// Store on GPU as 3-component float (internalFormat)
+		GL_RGBA_FLOAT16_ATI,	// Store on GPU as 3-component float (internalFormat)
 		iWidth,					// width
 		iHeight,				// height
 		0,						// border
@@ -61,7 +63,7 @@ void LuminanceConverter::initShaders( )
 	iInputTextureUniform	= new ShaderUniformValue<int>();
 	iScaleBias				= new ShaderUniformVector<float>(VEC2);
 
-	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, "./shader/luminance.frag");
+	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, "./shader/luminanceFP.frag");
 
 	// Uniforms
 	iInputTextureUniform->setValue( 0 );
@@ -133,10 +135,8 @@ void LuminanceConverter::renderSceneOnQuad(GLuint textureId, GLenum target)
  */
 GLuint LuminanceConverter::processData(GLuint inputTextureId)
 {
-	//glViewport(0, 0, iWidth, iHeight);
-
-	// enable the texture rectangle
-	glEnable(GL_TEXTURE_2D);
+	//// enable the texture rectangle
+	//glEnable(LUMINANCE_TEXTURE_TARGET);
 
 	// bind it and specify to which color attachment we 
 	// want to draw to (always the same - textures permute)
@@ -149,7 +149,6 @@ GLuint LuminanceConverter::processData(GLuint inputTextureId)
 	{
 		// and finally, draw, and do the computations on the fragment shader
 		renderSceneOnQuad(inputTextureId, GL_TEXTURE_2D);
-
 	}
 	iShaderProgram->disableProgram();
 
