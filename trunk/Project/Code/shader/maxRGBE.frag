@@ -5,7 +5,6 @@ varying vec2 topRight;
 varying vec2 bottomLeft;
 varying vec2 bottomRight;
 
-
 /* ****************************** FUNCTIONS DECLARATIONS ***************************** */
 
 vec4 decodeRGBE(vec4 color);
@@ -22,11 +21,9 @@ void main(void)
     float top		= decodeRGBE( texture2DRect(inputTexture, bottomLeft) ).x;
     float bottom	= decodeRGBE( texture2DRect(inputTexture, bottomRight) ).x;
 	
-	// sum them all
-	//float sum = log(left + 10e-8) + log(right + 10e-8) + log(bottom + 10e-8) + log(top + 10e-8);
-	float sum = left + right + bottom + top;
+	float maxValue = max(max(left, right), max(top, bottom));
 
-	gl_FragColor = encodeRGBE(sum);
+	gl_FragColor = encodeRGBE(maxValue);
 }
 
 /*
