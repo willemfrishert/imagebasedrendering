@@ -3,7 +3,7 @@
 #include "ShaderObject.h"
 #include "ShaderUniformValue.h"
 #include "ShaderProgram.h"
-#include "FloatTextProcessor.h"
+#include "GPUParallelReductor.h"
 
 inline void check(char* str)
 {
@@ -18,7 +18,7 @@ inline void check(char* str)
 }
 
 
-FloatTextProcessor::FloatTextProcessor( float* values, int width, int height, string fragmentShaderFilename, 
+GPUParallelReductor::GPUParallelReductor( float* values, int width, int height, string fragmentShaderFilename, 
 									   GLint texInternalFormat, GLenum texFormat )
 : iWidth( width )
 , iHeight( height )
@@ -36,7 +36,7 @@ FloatTextProcessor::FloatTextProcessor( float* values, int width, int height, st
 	
 }
 
-FloatTextProcessor::FloatTextProcessor(int width, int height, 
+GPUParallelReductor::GPUParallelReductor(int width, int height, 
 									   string fragmentShaderFilename, GLint texInternalFormat, GLenum texFormat)
 : iWidth( width )
 , iHeight( height )
@@ -53,7 +53,7 @@ FloatTextProcessor::FloatTextProcessor(int width, int height,
 	initShaders( fragmentShaderFilename );
 }
 
-void FloatTextProcessor::initShaders( string fragmentShaderFilename )
+void GPUParallelReductor::initShaders( string fragmentShaderFilename )
 {
 	iShaderProgram			= new ShaderProgram();
 	iInputTextureUniform	= new ShaderUniformValue<int>();
@@ -74,7 +74,7 @@ void FloatTextProcessor::initShaders( string fragmentShaderFilename )
 	iShaderProgram->buildProgram();
 }
 
-void FloatTextProcessor::generateTextures( float* originalData )
+void GPUParallelReductor::generateTextures( float* originalData )
 {
 	// generate texture id's
 	glGenTextures(2, iTextures);
@@ -89,7 +89,7 @@ void FloatTextProcessor::generateTextures( float* originalData )
 	}
 }
 
-void FloatTextProcessor::setupTexture(GLuint textureId, const GLvoid* data)
+void GPUParallelReductor::setupTexture(GLuint textureId, const GLvoid* data)
 {
 	// NOTE: use GL_TEXTURE_RECTANGLE_ARB in order to specify coords
 	// from [0, height] x [0, width]
@@ -116,7 +116,7 @@ void FloatTextProcessor::setupTexture(GLuint textureId, const GLvoid* data)
 }
 
 
-void FloatTextProcessor::setOriginalTexture(GLuint originalTexId)
+void GPUParallelReductor::setOriginalTexture(GLuint originalTexId)
 {
 	this->iOriginalTexture = originalTexId;
 }
@@ -126,7 +126,7 @@ void FloatTextProcessor::setOriginalTexture(GLuint originalTexId)
  * the iOriginalTexture that was set previously
  * @param result
  */
-void FloatTextProcessor::processData( float* result )
+void GPUParallelReductor::processData( float* result )
 {
 	if ( this->iOriginalTexture != 0)
 	{
@@ -139,7 +139,7 @@ void FloatTextProcessor::processData( float* result )
  * NOTE: result must have allocated space for sizeof(float) * 4
  * @return the result of the algorithm
  */
-void FloatTextProcessor::processData( GLuint originalTexId, float* result )
+void GPUParallelReductor::processData( GLuint originalTexId, float* result )
 {
 	glViewport(0, 0, iWidth, iHeight);
 
@@ -197,7 +197,7 @@ void FloatTextProcessor::processData( GLuint originalTexId, float* result )
 	FrameBufferObject::unbind();
 }
 
-void FloatTextProcessor::renderSceneOnQuad(GLuint textureId, 
+void GPUParallelReductor::renderSceneOnQuad(GLuint textureId, 
 					   GLenum target, int width, int height)
 {
 	/************************************************************************/
@@ -239,7 +239,7 @@ void FloatTextProcessor::renderSceneOnQuad(GLuint textureId,
 	glDisable( target );
 }
 
-FloatTextProcessor::~FloatTextProcessor(void)
+GPUParallelReductor::~GPUParallelReductor(void)
 {
 	delete iFbo;
 	delete iFragmentShader;
