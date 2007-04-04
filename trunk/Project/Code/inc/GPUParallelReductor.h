@@ -7,16 +7,16 @@ class ShaderProgram;
 template <class T>
 class ShaderUniformValue;
 
-class FloatTextProcessor
+class GPUParallelReductor
 {
 public:
-	FloatTextProcessor(float* values, int width, int height, string fragmentShaderFilename, 
+	GPUParallelReductor(float* values, int width, int height, string fragmentShaderFilename, 
 		GLint texInternalFormat = GL_RGB_FLOAT32_ATI, GLenum texFormat = GL_LUMINANCE);
 	
-	FloatTextProcessor(int width, int height, string fragmentShaderFilename, 
+	GPUParallelReductor(int width, int height, string fragmentShaderFilename, 
 		GLint texInternalFormat = GL_RGB_FLOAT32_ATI, GLenum texFormat = GL_LUMINANCE);
 	
-	~FloatTextProcessor(void);
+	~GPUParallelReductor(void);
 
 	void processData(float* result);
 
