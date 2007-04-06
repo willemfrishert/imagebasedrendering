@@ -1,23 +1,22 @@
-uniform sampler2DRect inputTexture;
+uniform sampler2D inputTexture;
+uniform float height;
 
 varying vec2 topLeft;
 varying vec2 topRight;
 varying vec2 bottomLeft;
 varying vec2 bottomRight;
 
-
 void main(void)
 {
-	// The values should be in the format (L, L, L, E) using RGBE encoding
-	// Decode and then get Luminance (.x)
-    float left		= texture2DRect(inputTexture, topLeft).x;
-    float right		= texture2DRect(inputTexture, topRight).x;
-    float top		= texture2DRect(inputTexture, bottomLeft).x;
-    float bottom	= texture2DRect(inputTexture, bottomRight).x;
+	// NOTE: extract from THE SECOND CHANNEL: Y, where log(luminance)
+	// should be stored
+    float left		= texture2D(inputTexture, topLeft / height).y;
+    float right		= texture2D(inputTexture, topRight / height).y;
+    float top		= texture2D(inputTexture, bottomLeft / height).y;
+    float bottom	= texture2D(inputTexture, bottomRight / height).y;
 	
 	// sum them all
-	float sum = log(left + 10e-8) + log(right + 10e-8) + log(bottom + 10e-8) + log(top + 10e-8);
-	//float sum = left + right + bottom + top;
+	float sum = left + right + bottom + top;
 
-	gl_FragColor = vec4(sum, sum, sum, 1.0);
+	gl_FragColor = vec4(sum, sum, sum, right);
 }
