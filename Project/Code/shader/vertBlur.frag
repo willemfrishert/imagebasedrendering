@@ -1,6 +1,10 @@
 uniform sampler2D originalTexture;
 uniform int mipmapSize;
-//uniform float level;
+//uniform float mipmapLevel;
+
+uniform float blurWeight1;
+uniform float blurWeight2;
+uniform float blurWeight3;
 
 void main(void)
 {
@@ -16,16 +20,18 @@ void main(void)
 	vec2 fragCoord = gl_FragCoord.xy;
 	vec2 texCoord = gl_TexCoord[0].xy;
 
-	fragColor.rgb += 0.0002 * texture2D(originalTexture, (fragCoord + vec2( -2.0, 0.0 )) * delta ).rgb;
-	fragColor.rgb += 0.0837 * texture2D(originalTexture, (fragCoord + vec2( -1.0, 0.0 )) * delta ).rgb;
-	fragColor.rgb += 0.6187 * texture2D(originalTexture, (fragCoord                    ) * delta ).rgb;
-	fragColor.rgb += 0.0837 * texture2D(originalTexture, (fragCoord + vec2(  1.0, 0.0 )) * delta ).rgb;
-	fragColor.rgb += 0.0002 * texture2D(originalTexture, (fragCoord + vec2(  2.0, 0.0 )) * delta ).rgb;
+	//fragColor.rgb += 0.01330373 * texture2D(originalTexture, (fragCoord + vec2( 0.0, -2.0 )) * delta ).rgb;
+	//fragColor.rgb += 0.11098164 * texture2D(originalTexture, (fragCoord + vec2( 0.0, -1.0 )) * delta ).rgb;
+	//fragColor.rgb += 0.22508352 * texture2D(originalTexture, (fragCoord                    ) * delta ).rgb;
+	//fragColor.rgb += 0.11098164 * texture2D(originalTexture, (fragCoord + vec2( 0.0,  1.0 )) * delta ).rgb;
+	//fragColor.rgb += 0.01330373 * texture2D(originalTexture, (fragCoord + vec2( 0.0,  2.0 )) * delta ).rgb;
 
+	fragColor.rgb += blurWeight3 * texture2D(originalTexture, (fragCoord + vec2( 0.0, -2.0 )) * delta ).rgb;
+	fragColor.rgb += blurWeight2 * texture2D(originalTexture, (fragCoord + vec2( 0.0, -1.0 )) * delta ).rgb;
+	fragColor.rgb += blurWeight1 * texture2D(originalTexture, (fragCoord                    ) * delta ).rgb;
+	fragColor.rgb += blurWeight2 * texture2D(originalTexture, (fragCoord + vec2( 0.0,  1.0 )) * delta ).rgb;
+	fragColor.rgb += blurWeight3 * texture2D(originalTexture, (fragCoord + vec2( 0.0,  2.0 )) * delta ).rgb;
 
-	//fragColor += texture2D(originalTexture, texCoord );
-
-	//fragColor = texture2D(originalTexture, texCoord );
 	gl_FragColor = vec4(fragColor.rgb, 1.0);
 
 //	gl_FragColor = vec4(texture2D(originalTexture, gl_TexCoord[0].xy).rgb, 1.0);
