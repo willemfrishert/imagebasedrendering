@@ -1,6 +1,6 @@
 #include "BloomEffect.h"
 
-BloomEffect::BloomEffect(unsigned int width, unsigned int height)
+BloomEffect::BloomEffect()
 : iOriginalImageSize( ETextureSize512 )
 //, iImageWinHeight( height )
 //, iImageBlurWidth( 16 )
@@ -12,7 +12,7 @@ BloomEffect::BloomEffect(unsigned int width, unsigned int height)
 BloomEffect::~BloomEffect()
 {
 	delete iOriginalFBO;
-	delete iFinalBlurFBO;
+	delete iUpscaleBlurFBO;
 
 	for (int i = 0; i < KNumberOfBlurLevels; i++)
 	{
@@ -22,8 +22,8 @@ BloomEffect::~BloomEffect()
 
 void BloomEffect::Init()
 {
-	InitTextures();
 	InitFramebufferObject();
+	InitTextures();
 	InitShaders();
 }
 
@@ -34,7 +34,6 @@ void BloomEffect::InitTextures()
 	iMipmapSize[2] = ETextureSize32;
 	iMipmapSize[3] = ETextureSize16;
 
-	iOriginalFBO = new FrameBufferObject();
 	iOriginalFBO->bind();
 
 	iOriginalFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
@@ -64,19 +63,18 @@ void BloomEffect::InitTextures()
 
 	for (int i = 0; i < KNumberOfBlurLevels; i++)
 	{
-		iIntermediateFBO[i] = new FrameBufferObject();
 		iIntermediateFBO[i]->bind();
 
 		glBindTexture(GL_TEXTURE_2D, iHorizBlurredTexture[i]);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, iMipmapSize[i], iMipmapSize[i], 0, GL_RGBA, GL_FLOAT, NULL);
 
 		glBindTexture(GL_TEXTURE_2D, iFinalBlurredTexture[i]);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, iMipmapSize[i], iMipmapSize[i], 0, GL_RGBA, GL_FLOAT, NULL);
@@ -88,11 +86,8 @@ void BloomEffect::InitTextures()
 		FrameBufferObject::unbind();
 	}
 
-
-	iFinalBlurFBO = new FrameBufferObject();
-
-	iFinalBlurFBO->bind();
-	iFinalBlurFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
+	iUpscaleBlurFBO->bind();
+	iUpscaleBlurFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
 
 	// create a texture for the vertical blur and thus final pass
 	glGenTextures(KNumberOfBlurLevels, iUpscaledTexture);
@@ -100,19 +95,44 @@ void BloomEffect::InitTextures()
 	for (int i = 0; i < KNumberOfBlurLevels; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, iUpscaledTexture[i]);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, iOriginalImageSize, iOriginalImageSize, 0, GL_RGBA, GL_FLOAT, NULL);
-		iFinalBlurFBO->attachTexture(iUpscaledTexture[i], GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_2D, 0);
+		iUpscaleBlurFBO->attachTexture(iUpscaledTexture[i], GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_2D, 0);
 	}
+
+	FrameBufferObject::unbind();
+
+	iBlendedFBO->bind();
+	iBlendedFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
+
+	glGenTextures(1, &iBlendedTexture);
+
+	glBindTexture(GL_TEXTURE_2D, iBlendedTexture);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, iOriginalImageSize, iOriginalImageSize, 0, GL_RGBA, GL_FLOAT, NULL);
+	iBlendedFBO->attachTexture(iBlendedTexture, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, 0);
 
 	FrameBufferObject::unbind();
 }
 
 void BloomEffect::InitFramebufferObject()
 {
+	iOriginalFBO = new FrameBufferObject();	
+	
+	for (int i = 0; i < KNumberOfBlurLevels; i++)
+	{
+		iIntermediateFBO[i] = new FrameBufferObject();
+	}
+
+	iUpscaleBlurFBO = new FrameBufferObject();
+
+	iBlendedFBO = new FrameBufferObject();
 }
 
 /*
@@ -120,17 +140,32 @@ void BloomEffect::InitFramebufferObject()
 */
 void BloomEffect::InitShaders()
 {
+	InitCodecShaderObject();
+
+	InitBlurShaders();
+	InitBlendShader();
+}
+
+void BloomEffect::InitCodecShaderObject()
+{
+	iCodecRGBEFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/codecRGBE.frag");
+}
+
+void BloomEffect::InitBlurShaders()
+{
 	iHorizontalBlurFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/horizBlur.frag");
 	iVerticalBlurFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/vertBlur.frag");
-	iBlenderFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/bloomBlender.frag");
+	
+	//generate blurred images using the mipmaps
+	TMipMapLevel mipmapLevel = EMipMapLevel128;
+	TTextureID intermediateTextureNumber = ETextureId128;
 
 	iHorizontalShaderProgram = new ShaderProgram();
 	iVerticalShaderProgram = new ShaderProgram();
-	iBlenderShaderProgram = new ShaderProgram();
-
-	iHorizontalShaderProgram->attachShader( *iHorizontalBlurFragmentShader );
-	iVerticalShaderProgram->attachShader( *iVerticalBlurFragmentShader );
-	iBlenderShaderProgram->attachShader( *iBlenderFragmentShader );
+	iHorizontalShaderProgram->attachShader( *iCodecRGBEFragmentShader );
+	iHorizontalShaderProgram->attachShader( *(iHorizontalBlurFragmentShader) );
+	iVerticalShaderProgram->attachShader( *iCodecRGBEFragmentShader );
+	iVerticalShaderProgram->attachShader( *(iVerticalBlurFragmentShader) );
 
 	iTextureOriginalUniform.setValue( 0 );
 	iTextureOriginalUniform.setName("originalTexture");
@@ -138,33 +173,56 @@ void BloomEffect::InitShaders()
 	iTextureHorizontalUniform.setValue( 0 );
 	iTextureHorizontalUniform.setName("originalTexture");
 
-	iMipmapSizeUniform.setValue( 32 );
+	iMipmapSizeUniform.setValue( iMipmapSize[0] );
 	iMipmapSizeUniform.setName("mipmapSize");
 
-	iMipmapLevelUniform.setValue( 4.0f );
+	iMipmapLevelUniform.setValue( mipmapLevel );
 	iMipmapLevelUniform.setName("mipmapLevel");
 
-	iHorizTextureSizeUniform.setValue( 32 );
+	iHorizTextureSizeUniform.setValue( iMipmapSize[0] );
 	iHorizTextureSizeUniform.setName("mipmapSize");
 
-	iHorizBlurWeight1Uniform.setValue( 0.22508352f );
+	iHorizontalShaderProgram->addUniformObject( &iTextureOriginalUniform );
+	iHorizontalShaderProgram->addUniformObject( &iMipmapSizeUniform );
+	iHorizontalShaderProgram->addUniformObject( &iMipmapLevelUniform );
+	iVerticalShaderProgram->addUniformObject( &iTextureHorizontalUniform );
+	iVerticalShaderProgram->addUniformObject( &iHorizTextureSizeUniform );
+
 	iHorizBlurWeight1Uniform.setName("blurWeight1");
-	iHorizBlurWeight2Uniform.setValue( 0.11098164f );
 	iHorizBlurWeight2Uniform.setName("blurWeight2");
-	iHorizBlurWeight3Uniform.setValue( 0.01330373f );
 	iHorizBlurWeight3Uniform.setName("blurWeight3");
 
-	iVertBlurWeight1Uniform.setValue( 0.22508352f );
 	iVertBlurWeight1Uniform.setName("blurWeight1");
-	iVertBlurWeight2Uniform.setValue( 0.11098164f );
 	iVertBlurWeight2Uniform.setName("blurWeight2");
-	iVertBlurWeight3Uniform.setValue( 0.01330373f );
 	iVertBlurWeight3Uniform.setName("blurWeight3");
 
+	iHorizBlurWeight1Uniform.setValue( 0.375f );
+	iHorizBlurWeight2Uniform.setValue( 0.250f );
+	iHorizBlurWeight3Uniform.setValue( 0.062f );
 
+	iVertBlurWeight1Uniform.setValue( 0.375f );
+	iVertBlurWeight2Uniform.setValue( 0.250f );
+	iVertBlurWeight3Uniform.setValue( 0.062f );
 
-	//iHorizMipMapLevelUniform.setValue( 4.0f );
-	//iHorizMipMapLevelUniform.setName("mipmapLevel");
+	iHorizontalShaderProgram->addUniformObject( &iHorizBlurWeight1Uniform);
+	iHorizontalShaderProgram->addUniformObject( &iHorizBlurWeight2Uniform);
+	iHorizontalShaderProgram->addUniformObject( &iHorizBlurWeight3Uniform);
+
+	iVerticalShaderProgram->addUniformObject( &iVertBlurWeight1Uniform);
+	iVerticalShaderProgram->addUniformObject( &iVertBlurWeight2Uniform);
+	iVerticalShaderProgram->addUniformObject( &iVertBlurWeight3Uniform);
+
+	iHorizontalShaderProgram->buildProgram();
+	iVerticalShaderProgram->buildProgram();
+}
+
+void BloomEffect::InitBlendShader()
+{
+	iBlenderFragmentShader = new ShaderObject(GL_FRAGMENT_SHADER, "./shader/bloomBlender.frag");
+	iBlenderShaderProgram = new ShaderProgram();
+
+	iBlenderShaderProgram->attachShader( *iCodecRGBEFragmentShader );
+	iBlenderShaderProgram->attachShader( *iBlenderFragmentShader );
 
 	iBlenderOriginalTextureUniform.setValue( 0 );
 	iBlenderOriginalTextureUniform.setName("originalTexture");
@@ -181,36 +239,12 @@ void BloomEffect::InitShaders()
 	iBlenderBlur4TextureUniform.setValue( 4 );
 	iBlenderBlur4TextureUniform.setName("blurTexture3");
 
-
-	//iBlurDeltaUniform.setName("delta");
-	//iBlurDeltaUniform.setValue( 0.01f );
-
-	iHorizontalShaderProgram->addUniformObject( &iTextureOriginalUniform );
-	iHorizontalShaderProgram->addUniformObject( &iMipmapSizeUniform );
-	iHorizontalShaderProgram->addUniformObject( &iMipmapLevelUniform );
-	iHorizontalShaderProgram->addUniformObject( &iHorizBlurWeight1Uniform);
-	iHorizontalShaderProgram->addUniformObject( &iHorizBlurWeight2Uniform);
-	iHorizontalShaderProgram->addUniformObject( &iHorizBlurWeight3Uniform);
-	//iHorizontalShaderProgram->addUniformObject( &iBlurDeltaUniform );
-
-	iVerticalShaderProgram->addUniformObject( &iTextureHorizontalUniform );
-	iVerticalShaderProgram->addUniformObject( &iHorizTextureSizeUniform );
-	iVerticalShaderProgram->addUniformObject( &iVertBlurWeight1Uniform);
-	iVerticalShaderProgram->addUniformObject( &iVertBlurWeight2Uniform);
-	iVerticalShaderProgram->addUniformObject( &iVertBlurWeight3Uniform);
-
-	//iVerticalShaderProgram->addUniformObject( &iHorizMipMapLevelUniform );
-	//iVerticalShaderProgram->addUniformObject( &iBlurDeltaUniform );
-
-	//iBlenderShaderProgram->addUniformObject( &iTextureUniform );
 	iBlenderShaderProgram->addUniformObject( &iBlenderOriginalTextureUniform );
 	iBlenderShaderProgram->addUniformObject( &iBlenderBlur1TextureUniform );
 	iBlenderShaderProgram->addUniformObject( &iBlenderBlur2TextureUniform );
 	iBlenderShaderProgram->addUniformObject( &iBlenderBlur3TextureUniform );
 	iBlenderShaderProgram->addUniformObject( &iBlenderBlur4TextureUniform );
 
-	iHorizontalShaderProgram->buildProgram();
-	iVerticalShaderProgram->buildProgram();
 	iBlenderShaderProgram->buildProgram();
 }
 
@@ -237,7 +271,7 @@ void BloomEffect::Begin()
 
 
 
-void BloomEffect::End()
+GLuint BloomEffect::End()
 {
 	/************************************************************************/
 	/* ######################### DRAW WAS DONE BEFORE THIS !!!              */
@@ -253,32 +287,35 @@ void BloomEffect::End()
 	TTextureID intermediateTextureNumber = ETextureId128;
 
 	// connect finalblur FBO
-	for (int i = 0 ; i < KNumberOfBlurLevels; i++)
+	for (int textureCounter = 0 ; textureCounter < KNumberOfBlurLevels; textureCounter++)
 	{
-		iFinalBlurFBO->bind();
-		glDrawBuffer( GL_COLOR_ATTACHMENT0_EXT + i);
+		iUpscaleBlurFBO->bind();
+		glDrawBuffer( GL_COLOR_ATTACHMENT0_EXT + textureCounter);
 		glViewport( 0, 0, iOriginalImageSize, iOriginalImageSize );
 
-		BlurMipmap( iOriginalTexture, intermediateTextureNumber+i, iMipmapSize[i], mipmapLevel+i, iFinalBlurFBO );
+		BlurMipmap( iOriginalTexture, textureCounter, iMipmapSize[textureCounter], mipmapLevel+textureCounter, iUpscaleBlurFBO );
 	}
 	FrameBufferObject::unbind();
 
 	// blend the images as a final result
 	glViewport( iOldViewPort[0], iOldViewPort[1], iOldViewPort[2], iOldViewPort[3] );
 
-	glClearColor( 1.0f, 0.0f, 0.0f, 1.0f );
+	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-	//RenderSceneOnQuad(iHorizBlurredTexture[3]);
-	//RenderSceneOnQuad(iFinalBlurredTexture[3]);
-	//RenderSceneOnQuad(iUpscaledTexture[2]);
+	//RenderSceneOnQuad(iOriginalTexture);
+	//RenderSceneOnQuad(iHorizBlurredTexture[0]);
+	//RenderSceneOnQuad(iFinalBlurredTexture[0]);
+	//RenderSceneOnQuad(iUpscaledTexture[0]);
 	RenderBloomEffect(iOriginalTexture, iUpscaledTexture);
+
+	return iBlendedTexture;
 }
 
-void BloomEffect::BlurMipmap( GLuint aTextureID, GLuint aIntermediateTextureNumber, GLuint aMipmapSize, GLuint aMipmapLevel, FrameBufferObject* aFinalFBO )
+void BloomEffect::BlurMipmap( GLuint aTextureID, GLuint aCounter, GLuint aMipmapSize, GLuint aMipmapLevel, FrameBufferObject* aUpscaleFBO )
 {
-	glBindTexture(GL_TEXTURE_2D, iFinalBlurredTexture[aIntermediateTextureNumber]);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glBindTexture(GL_TEXTURE_2D, iFinalBlurredTexture[aCounter]);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 
 	// store current information (which FBO is connected + Drawbuffer)
@@ -292,7 +329,7 @@ void BloomEffect::BlurMipmap( GLuint aTextureID, GLuint aIntermediateTextureNumb
 	/* horizontal blurred texture using the original image texture          */
 	/************************************************************************/
 	glViewport(0, 0, aMipmapSize, aMipmapSize);
-	iIntermediateFBO[aIntermediateTextureNumber]->bind();
+	iIntermediateFBO[aCounter]->bind();
 	glDrawBuffer( GL_COLOR_ATTACHMENT0_EXT );
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -319,7 +356,7 @@ void BloomEffect::BlurMipmap( GLuint aTextureID, GLuint aIntermediateTextureNumb
 	iHorizTextureSizeUniform.setValue( aMipmapSize );
 	iVerticalShaderProgram->useProgram();
 		//UpscaleTexture(iHorizBlurredTexture, aUpscaleFactor);
-		RenderSceneOnQuad( iHorizBlurredTexture[aIntermediateTextureNumber] );
+		RenderSceneOnQuad( iHorizBlurredTexture[aCounter] );
 	iVerticalShaderProgram->disableProgram();
 
 	/************************************************************************/
@@ -327,14 +364,14 @@ void BloomEffect::BlurMipmap( GLuint aTextureID, GLuint aIntermediateTextureNumb
 	/* upscale blurred image                                                */
 	/************************************************************************/
 
-	glBindTexture(GL_TEXTURE_2D, iFinalBlurredTexture[aIntermediateTextureNumber]);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glBindTexture(GL_TEXTURE_2D, iFinalBlurredTexture[aCounter]);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	aFinalFBO->bind();
+	aUpscaleFBO->bind();
 	glViewport( oldViewPort[0], oldViewPort[1], oldViewPort[2], oldViewPort[3] );
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	RenderSceneOnQuad(iFinalBlurredTexture[aIntermediateTextureNumber]);
+	RenderSceneOnQuad(iFinalBlurredTexture[aCounter]);
 	
 	FrameBufferObject::unbind();
 }
@@ -414,9 +451,16 @@ void BloomEffect::UpscaleTexture( GLuint aTextureID, GLfloat aTextureCoord )
 
 void BloomEffect::RenderBloomEffect( GLuint aOriginalTexture, GLuint* aUpscaledTexture )
 {
+//	iBlendedFBO->bind();
+//	glDrawBuffer( GL_COLOR_ATTACHMENT0_EXT );
+	
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	iBlenderShaderProgram->useProgram();
 		RenderSceneOnQuad(aOriginalTexture, aUpscaledTexture );
 	iBlenderShaderProgram->disableProgram();
+//	FrameBufferObject::unbind();
 
 	//RenderSceneOnQuad( iFinalBlurredTexture );
 	//RenderSceneOnQuad( iUpscaledTexture[0] );
