@@ -5,8 +5,6 @@ varying vec2 bottomRight;
 
 void main(void)
 {
-	/*topLeft		= ((gl_Vertex.st - 0.5) * 2.0) + 0.5;*/
-	
 	// interpolate the coordinates for the fragment shader
 	topLeft		= 2.0 * gl_Vertex.st - 0.5;
 	topRight	= topLeft + vec2(1.0,0.0);
