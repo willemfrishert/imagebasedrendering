@@ -17,6 +17,8 @@ public:
 	virtual ~ShaderUniformValue(void);
 
 	void setValue(T value);
+
+	T getValue() const;
 	
 	virtual void use();
 
@@ -46,6 +48,13 @@ void ShaderUniformValue<T>::setValue(T value)
 	// NOTE: we must call the upper class and MARK the
 	// value as CHANGED
 	this->setHasChanged( true );
+}
+
+
+template <class T>
+T ShaderUniformValue<T>::getValue() const
+{
+	return this->value;
 }
 
 template <class T>
