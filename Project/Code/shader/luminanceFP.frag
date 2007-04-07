@@ -1,5 +1,4 @@
 uniform sampler2D inputTexture;
-//uniform vec2 scaleBias;
 
 float computeLuminance(vec4 color);
 vec4 decodeRGBE(vec4 color);
@@ -10,14 +9,19 @@ void main(void)
 
 	color = decodeRGBE(color);
 
-	//if(color.r > 1.0 || color.g > 1.0 || color.b > 1.0)
+	float luminance = computeLuminance(color);
+
+	// Store luminance on the first channel and log(luminance) on the second
+	gl_FragColor = vec4(luminance, log(luminance + 10e-8), luminance, luminance);
+	
+	//float delta = 1.0;
+	//if(color.r > delta || color.g > delta || color.b > delta)
 	//	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 	//else
 	//	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 
-	float luminance = computeLuminance(color);
-
-	gl_FragColor = vec4(luminance, luminance, luminance, 1.0);
+	//gl_FragColor = color;
+	//gl_FragColor = vec4(luminance, luminance, luminance, 1.0);
 }
 
 float computeLuminance(vec4 color)
@@ -31,5 +35,7 @@ float computeLuminance(vec4 color)
 vec4 decodeRGBE(vec4 color)
 {
 	float exponent = exp2(color.a * 255.0 - 128.0);
-	return color * exponent;
+	color.rgb *= exponent;
+	color.a = 1.0;
+	return color;
 }
