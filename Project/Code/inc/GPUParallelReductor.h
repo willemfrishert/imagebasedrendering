@@ -53,4 +53,5 @@ private:
 	ShaderObject* iFragmentShader;
 	ShaderObject* iVertexShader;
 	ShaderUniformValue<int>* iInputTextureUniform;
+	ShaderUniformValue<float>* iTexHeightUniform;
 };
