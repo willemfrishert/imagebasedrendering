@@ -7,14 +7,15 @@
 #include "ShaderUniformValue.h"
 
 const int KNumberOfBlurLevels = 4;
+const int KNumberOfBlurShaders = 1;
 
 class BloomEffect
 {
 public:
-	BloomEffect(unsigned int width, unsigned int height);
+	BloomEffect();
 	~BloomEffect();
 	void Begin();
-	void End();
+	GLuint End();
 
 private:
 
@@ -55,6 +56,9 @@ private:
 	void InitTextures();
 	void InitFramebufferObject();
 	void InitShaders();
+	void InitCodecShaderObject();
+	void InitBlurShaders();
+	void InitBlendShader();
 
 	void BlurMipmap( GLuint aTextureID, GLuint aIntermediateTextureNumber, GLuint aMipmapSize, GLuint aMipmapLevel, FrameBufferObject* aFinalFBO );
 
@@ -62,8 +66,6 @@ private:
 	void RenderSceneOnQuad(  GLuint aOriginalTexture, GLuint* aUpscaledTexture );
 	void UpscaleTexture( GLuint aTextureID, GLfloat aTextureCoord );
 	void RenderBloomEffect(GLuint aOriginalTexture, GLuint* aUpscaledTexture);
-
-
 
 	GLint iOldViewPort[4];
 
@@ -75,12 +77,14 @@ private:
 
 	FrameBufferObject* iOriginalFBO;
 	FrameBufferObject* iIntermediateFBO[KNumberOfBlurLevels];
-	FrameBufferObject* iFinalBlurFBO;
+	FrameBufferObject* iUpscaleBlurFBO;
+	FrameBufferObject* iBlendedFBO;
 
 	GLuint iOriginalTexture;
 	GLuint iHorizBlurredTexture[KNumberOfBlurLevels];
 	GLuint iFinalBlurredTexture[KNumberOfBlurLevels];
 	GLuint iUpscaledTexture[KNumberOfBlurLevels];
+	GLuint iBlendedTexture;
 
 	GLuint iMipmapSize[KNumberOfBlurLevels];
 
@@ -90,14 +94,16 @@ private:
 	ShaderProgram* iVerticalShaderProgram;
 	ShaderProgram* iBlenderShaderProgram;
 
-	ShaderObject* iBlenderFragmentShader;
 	ShaderObject* iHorizontalBlurFragmentShader;
 	ShaderObject* iVerticalBlurFragmentShader;
+	ShaderObject* iBlenderFragmentShader;
 
 	ShaderUniformValue<int> iTextureOriginalUniform;
 	ShaderUniformValue<int> iTextureHorizontalUniform;
 	ShaderUniformValue<int> iMipmapSizeUniform;
 	ShaderUniformValue<int> iHorizTextureSizeUniform;
+	ShaderUniformValue<float> iMipmapLevelUniform;
+
 	ShaderUniformValue<float> iHorizBlurWeight1Uniform;
 	ShaderUniformValue<float> iHorizBlurWeight2Uniform;
 	ShaderUniformValue<float> iHorizBlurWeight3Uniform;
@@ -111,6 +117,5 @@ private:
 	ShaderUniformValue<int> iBlenderBlur3TextureUniform;
 	ShaderUniformValue<int> iBlenderBlur4TextureUniform;
 
-	ShaderUniformValue<float> iBlurDeltaUniform;
-	ShaderUniformValue<float> iMipmapLevelUniform;
+	ShaderObject* iCodecRGBEFragmentShader;
 };
