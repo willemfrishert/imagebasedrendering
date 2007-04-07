@@ -6,7 +6,7 @@
 #include "ShaderProgram.h"
 #include "LuminanceConverter.h"
 
-GLenum LuminanceConverter::LUMINANCE_TEXTURE_TARGET = GL_TEXTURE_RECTANGLE_ARB;
+GLenum LuminanceConverter::LUMINANCE_TEXTURE_TARGET = GL_TEXTURE_2D;
 
 LuminanceConverter::LuminanceConverter(int width, int height, 
 									   int minExponent, int maxExponent)
@@ -52,7 +52,7 @@ void LuminanceConverter::setupTexture(GLuint textureId, const GLvoid* data)
 		iWidth,					// width
 		iHeight,				// height
 		0,						// border
-		GL_RGBA,				// Source data is 1-component
+		GL_RGBA,				// Source data is 4-component
 		GL_FLOAT,				// Source data is floating point numbers
 		data);					// Texture data
 }
