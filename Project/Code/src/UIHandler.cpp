@@ -34,12 +34,23 @@ UIHandler::~UIHandler()
 //Used to handle the keyboard input (ASCII Characters)
 void UIHandler::ProcessNormalKeys(unsigned char key, int x, int y)
 {
+	float exposureIncrement = 0.06;
 	if (key == 't')
 	{
 	}
 
 	if (key == 'l')
 	{
+	}
+
+	if (key == '+')
+	{
+		iRenderer->SetExposure( iRenderer->GetExposure() + exposureIncrement);
+	}
+
+	if (key == '-')
+	{
+		iRenderer->SetExposure( iRenderer->GetExposure() - exposureIncrement);
 	}
 
 	if (key == 'q')
@@ -120,6 +131,8 @@ void UIHandler::ProcessMouseMotionEvent( int x, int y )
 {
 	if( EMouseDownLeft == iMouseButtonDown)
 	{
+		iRenderer->MouseMoved();
+
 		this->iRenderer->SetXRotation( this->iRenderer->GetOldXRotation() 
 			+ (float)(y - this->iMouseY) / 4.0);
 		this->iRenderer->SetYRotation( this->iRenderer->GetOldYRotation() 
