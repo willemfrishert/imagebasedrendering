@@ -5,18 +5,7 @@
 #include "ShaderProgram.h"
 #include "GPUParallelReductor.h"
 
-inline void check(char* str)
-{
-	static GLenum errCode;
-	const GLubyte *errString;
-	
-	if ((errCode = glGetError()) != GL_NO_ERROR) {
-		errString = gluErrorString(errCode);
-		fprintf (stderr, "OpenGL Error (%s): %s\n", str, errString);
-		exit(1);
-	}
-}
-
+GLenum GPU_REDUCTOR_TEXTURE_TARGET = GL_TEXTURE_2D;
 
 GPUParallelReductor::GPUParallelReductor( float* values, int width, int height, string fragmentShaderFilename, 
 									   GLint texInternalFormat, GLenum texFormat )
@@ -57,6 +46,7 @@ void GPUParallelReductor::initShaders( string fragmentShaderFilename )
 {
 	iShaderProgram			= new ShaderProgram();
 	iInputTextureUniform	= new ShaderUniformValue<int>();
+	iTexHeightUniform		= new ShaderUniformValue<float>();
 
 	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, fragmentShaderFilename);
 	
@@ -66,9 +56,13 @@ void GPUParallelReductor::initShaders( string fragmentShaderFilename )
 	iInputTextureUniform->setValue( 0 );
 	iInputTextureUniform->setName("inputTexture");
 
+	iTexHeightUniform->setValue(iHeight);
+	iTexHeightUniform->setName("height");
+
 	iShaderProgram->attachShader( *iFragmentShader );
 	iShaderProgram->attachShader( *iVertexShader );
 	iShaderProgram->addUniformObject( iInputTextureUniform );
+	iShaderProgram->addUniformObject( iTexHeightUniform );
 
 	// after all the shaders have been attached
 	iShaderProgram->buildProgram();
@@ -91,20 +85,20 @@ void GPUParallelReductor::generateTextures( float* originalData )
 
 void GPUParallelReductor::setupTexture(GLuint textureId, const GLvoid* data)
 {
-	// NOTE: use GL_TEXTURE_RECTANGLE_ARB in order to specify coords
+	// NOTE: use GPU_REDUCTOR_TEXTURE_TARGET in order to specify coords
 	// from [0, height] x [0, width]
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, textureId);
+	glBindTexture(GPU_REDUCTOR_TEXTURE_TARGET, textureId);
 
-	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GPU_REDUCTOR_TEXTURE_TARGET, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GPU_REDUCTOR_TEXTURE_TARGET, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// NOTE: as opposed to what they say in the extension description of 
-	// GL_TEXTURE_RECTANGLE_ARB, ATI seems to not support 
+	// GPU_REDUCTOR_TEXTURE_TARGET, ATI seems to not support 
 	// the GL_REPEAT for wrapping modes
-	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GPU_REDUCTOR_TEXTURE_TARGET, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GPU_REDUCTOR_TEXTURE_TARGET, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-	glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,  // Need to use texture rectangle to get GPU-side floats
+	glTexImage2D(GPU_REDUCTOR_TEXTURE_TARGET,  // Need to use texture rectangle to get GPU-side floats
 		0,						// Mipmap level 0
 		internalFormat,			// Store on GPU as 3-component float (internalFormat)
 		iWidth,					// width
@@ -151,7 +145,7 @@ void GPUParallelReductor::processData( GLuint originalTexId, float* result )
 	int targetHeight = iHeight / 2;
 
 	// enable the texture rectangle
-	glEnable(GL_TEXTURE_RECTANGLE_ARB);
+	glEnable(GPU_REDUCTOR_TEXTURE_TARGET);
 
 	// bind it and specify to which color attachment we 
 	// want to draw to (always the same - textures permute)
@@ -163,10 +157,10 @@ void GPUParallelReductor::processData( GLuint originalTexId, float* result )
 	// First, do the first pass of the reduction from the original to one of the 
 	// ping-pong textures so we can continue using them without corrupting the original
 	iFbo->attachTexture(iTextures[ 0 ], GL_COLOR_ATTACHMENT0_EXT, 
-		GL_TEXTURE_RECTANGLE_ARB, 0);
+		GPU_REDUCTOR_TEXTURE_TARGET, 0);
 
 	// and finally, draw, and do the computations on the fragment shader
-	renderSceneOnQuad(originalTexId, GL_TEXTURE_RECTANGLE_ARB, 
+	renderSceneOnQuad(originalTexId, GPU_REDUCTOR_TEXTURE_TARGET, 
 		targetWidth, targetHeight);
 
 	for (int i = 0; targetWidth > 1; i++)
@@ -180,10 +174,10 @@ void GPUParallelReductor::processData( GLuint originalTexId, float* result )
 		// attach the current write texture: it should be the original one,
 		// or the previously written one
 		iFbo->attachTexture(iTextures[ curWriteTex ], GL_COLOR_ATTACHMENT0_EXT, 
-			GL_TEXTURE_RECTANGLE_ARB, 0);
+			GPU_REDUCTOR_TEXTURE_TARGET, 0);
 
 		// and finally, draw, and do the computations on the fragment shader
-		renderSceneOnQuad(iTextures[curReadTex], GL_TEXTURE_RECTANGLE_ARB, 
+		renderSceneOnQuad(iTextures[curReadTex], GPU_REDUCTOR_TEXTURE_TARGET, 
 			targetWidth, targetHeight);
 	}
 
