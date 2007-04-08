@@ -11,6 +11,14 @@
 #include "ShaderUniformVector.h"
 
 
+class VirtualTrackball;
+class CubeMap;
+class FrameBufferObject;
+class ScreenCapture;
+class LuminanceConverter;
+class PhotographicToneMapper;
+class IBLPerfectReflection;
+
 //CONSTANTS:
 const int KNumberOfColorMaps = 3;
 const int KNumberOfShaderPrograms = 3;
@@ -96,13 +104,17 @@ public:
 
 	float GetScreenHeightInPixels();
 
+	void MouseMoved();
+
 	//GETTERS
 	//---------------------------------------
+	VirtualTrackball& GetTrackball();
 
+	float GetExposure();
 
 	//SETTERS
 	//---------------------------------------
-
+	void SetExposure(float aValue);
 
 	//PRIVATE FUNCTIONS
 	//------------------
@@ -125,25 +137,14 @@ private:
 	/// Text output. Prints text on the screen.
 	void DrawText() const;
 
-	void ReadPixel (GLubyte *image, GLubyte *pix, int x, int y, int width);
-
-	void WritePixel (GLubyte *image, GLubyte *pix, int x, int y, int width);
-
-	GLuint GenerateDOT3( GLuint aHeightMapId );
-
-	// initializes the textures: texture map, bump map and normal map
-	void ResetMultitexturing(GLuint* textureIds);
-
 	// loads the textures
 	void LoadTextures();
 
-	// Computes the positional moving light position
-	void ComputeLightPosition(float* position, float radius, float alpha, float cosineFreq, float height);
+	void SetupTexture(GLuint textureId, const GLvoid* data);
 
-	// Dinamically computes lights positions
-	void ComputeLightsPositions();
+	void RenderSceneOnQuad(GLuint textureId, GLenum target, 
+		int width, int height);
 
-	void drawPointSprite(GLuint spriteId, GLfloat spriteSize);
 
 	//DRAWING FUNCTIONS
 	//------------------
@@ -178,6 +179,15 @@ private:
 	float iYPosition;
 	float iZoom;
 	float iScreenHeight;
+
+	CubeMap* iCubeMap;
+
+	ScreenCapture* iScreenCapture;
+	LuminanceConverter* iLuminanceConverter;
+	PhotographicToneMapper* iToneMapper;
+	IBLPerfectReflection* iIBLReflection;
+
+	VirtualTrackball trackball;
 };
 
 
