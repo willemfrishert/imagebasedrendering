@@ -61,28 +61,14 @@ void LuminanceConverter::initShaders( )
 {
 	iShaderProgram			= new ShaderProgram();
 	iInputTextureUniform	= new ShaderUniformValue<int>();
-	iScaleBias				= new ShaderUniformVector<float>(VEC2);
-
 	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, "./shader/luminanceFP.frag");
 
 	// Uniforms
 	iInputTextureUniform->setValue( 0 );
 	iInputTextureUniform->setName("inputTexture");
 
-	// compute scaleBias:
-	//float sb[2];
-	//sb[0] = static_cast<float>((iMaxExponent - iMinExponent)); // scale
-	//sb[1] = static_cast<float>(iMinExponent); // bias
-	float sb[2];
-	sb[0] = static_cast<float>(255.0f); // scale
-	sb[1] = static_cast<float>(-128.0f); // bias
-
-	iScaleBias->setValues(sb);
-	iScaleBias->setName("scaleBias");
-
 	iShaderProgram->attachShader( *iFragmentShader );
 	iShaderProgram->addUniformObject( iInputTextureUniform );
-	//iShaderProgram->addUniformObject( iScaleBias );
 
 	// after all the shaders have been attached
 	iShaderProgram->buildProgram();
