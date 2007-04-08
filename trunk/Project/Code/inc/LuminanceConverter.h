@@ -42,6 +42,5 @@ private:
 	ShaderProgram* iShaderProgram;
 	ShaderObject* iFragmentShader;
 	ShaderUniformValue<int>* iInputTextureUniform;
-	ShaderUniformVector<float>* iScaleBias;
 	static GLenum LUMINANCE_TEXTURE_TARGET;
 };
