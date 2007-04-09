@@ -13,27 +13,36 @@
  /*fprintf(stderr,"framebuffer complete!\n");*/\
  break; \
  case GL_FRAMEBUFFER_UNSUPPORTED_EXT: \
- fprintf(stderr,"framebuffer GL_FRAMEBUFFER_UNSUPPORTED_EXT\n");\
+ fprintf(stderr,"GL_FRAMEBUFFER_UNSUPPORTED_EXT: The combination of internal formats of the attached \
+images does violate an implementation-dependent set of \
+restrictions\n");\
  /* you gotta choose different formats */ \
  assert(0); \
  break; \
  case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT: \
- fprintf(stderr,"framebuffer INCOMPLETE_ATTACHMENT\n");\
+ fprintf(stderr,"INCOMPLETE_ATTACHMENT: Not all framebuffer attachment points are \"framebuffer \
+attachment complete\"\n");\
  break; \
  case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT: \
- fprintf(stderr,"framebuffer FRAMEBUFFER_MISSING_ATTACHMENT\n");\
+ fprintf(stderr,"FRAMEBUFFER_MISSING_ATTACHMENT: There should be at least one image \
+attached to the framebuffer.\n");\
  break; \
  case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: \
- fprintf(stderr,"framebuffer FRAMEBUFFER_DIMENSIONS\n");\
+ fprintf(stderr,"FRAMEBUFFER_DIMENSIONS: All attached images have the same width and height\n");\
  break; \
  case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: \
- fprintf(stderr,"framebuffer INCOMPLETE_FORMATS\n");\
+ fprintf(stderr,"INCOMPLETE_FORMATS: All images attached to the attachment points\
+COLOR_ATTACHMENT0_EXT through COLOR_ATTACHMENTn_EXT must have\
+the same internal format.\n");\
  break; \
  case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT: \
- fprintf(stderr,"framebuffer INCOMPLETE_DRAW_BUFFER\n");\
+ fprintf(stderr,"INCOMPLETE_DRAW_BUFFER: The value of FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE_EXT \
+must not be NONE for any color attachment point(s) named by DRAW_BUFFERi\n");\
  break; \
  case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT: \
- fprintf(stderr,"framebuffer INCOMPLETE_READ_BUFFER\n");\
+ fprintf(stderr,"INCOMPLETE_READ_BUFFER: If READ_BUFFER is not NONE, then the value of\
+FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE_EXT must not be NONE for the color attachment\
+ point named by READ_BUFFER\n");\
  break; \
  case GL_FRAMEBUFFER_BINDING_EXT: \
  fprintf(stderr,"framebuffer BINDING_EXT\n");\
