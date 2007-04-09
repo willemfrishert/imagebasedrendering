@@ -9,7 +9,7 @@ vec4 encodeRGBE(vec4 color);
 
 void main(void)
 {
-	vec2 texCoord = gl_TexCoord[0].xy;
+	vec2 texCoord = gl_TexCoord[0].st;
 
 	vec4 fragColor = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -26,10 +26,5 @@ void main(void)
 	fragColor.rgb += color5.rgb;
 
 	gl_FragColor = vec4(fragColor.rgb, 1.0);
-	//gl_FragColor = vec4(color1.rgb, 1.0);
-	//gl_FragColor = vec4(color2.rgb, 1.0);
-	//gl_FragColor = vec4(color3.rgb, 1.0);
-	//gl_FragColor = vec4(color4.rgb, 1.0);
-	//gl_FragColor = vec4(color5.rgb, 1.0);
 	//gl_FragColor = encodeRGBE(fragColor);
 }
