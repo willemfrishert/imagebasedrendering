@@ -7,9 +7,10 @@
 #include "ShaderUniformValue.h"
 #include "LuminanceConverter.h"
 #include "GPUParallelReductor.h"
+#include "BlurTexture.h"
 
-const int KNumberOfBlurLevels = 4;
-const int KNumberOfBlurShaders = 1;
+//const int KNumberOfBlurLevels = 4;
+//const int KNumberOfBlurShaders = 1;
 
 class BloomEffect
 {
@@ -60,13 +61,13 @@ private:
 	void InitShaders();
 	void InitCodecShaderObject();
 	void InitBrightpassShader();
-	void InitBlurShaders();
+	//void InitBlurShaders();
 	void InitBlendShader();
 
-	void BlurMipmap( GLuint aTextureID, GLuint aCounter, GLuint aMipmapSize, GLuint aMipmapLevel );
+	//void BlurMipmap( GLuint aTextureID, GLuint aCounter, GLuint aMipmapSize, GLuint aMipmapLevel );
 
 	void RenderSceneOnQuad( GLuint aTextureID);
-	void RenderSceneOnQuad( GLuint aTextureID, GLuint aVertexSize );
+	//void RenderSceneOnQuad( GLuint aTextureID, GLuint aVertexSize );
 	void RenderSceneOnQuad(  GLuint aOriginalTexture, GLuint* aBlurredTextures );
 	void RenderBloomEffect(GLuint aOriginalTexture, GLuint* aBlurredTextures);
 
@@ -76,50 +77,53 @@ private:
 
 
 	FrameBufferObject* iOriginalFBO;
-	FrameBufferObject* iIntermediateFBO[KNumberOfBlurLevels];
+	//FrameBufferObject* iIntermediateFBO[KNumberOfBlurLevels];
 	FrameBufferObject* iBlendedFBO;
 
 	GLuint iOriginalTexture;
 	GLuint iBrightpassTexture;
-	GLuint iHorizBlurredTexture[KNumberOfBlurLevels];
-	GLuint iFinalBlurredTexture[KNumberOfBlurLevels];
+	//GLuint iHorizBlurredTexture[KNumberOfBlurLevels];
+	//GLuint iFinalBlurredTexture[KNumberOfBlurLevels];
 	GLuint iBlendedTexture;
 
-	GLuint iMipmapSize[KNumberOfBlurLevels];
-	GLuint iMipmapDelta[KNumberOfBlurLevels];
+	//GLuint iMipmapSize[KNumberOfBlurLevels];
+	//GLuint iMipmapDelta[KNumberOfBlurLevels];
 
 	LuminanceConverter* iLuminanceConverter;
 	GPUParallelReductor* iGPUParallelReductor;
 	float logSum[4];
 
+	BlurTexture* iBlurTexture;
+	GLuint* finalBlurredTextures;
+
 	// ########### SHADERS DECLARATIONS ###########
 	ShaderProgram* iBrightpassShaderProgram;
-	ShaderProgram* iHorizontalShaderProgram;
-	ShaderProgram* iVerticalShaderProgram;
+	//ShaderProgram* iHorizontalShaderProgram;
+	//ShaderProgram* iVerticalShaderProgram;
 	ShaderProgram* iBlenderShaderProgram;
 
 	ShaderObject* iBrightpassFragmentShader;
-	ShaderObject* iHorizontalBlurFragmentShader;
-	//ShaderObject* iHorizontalBlurVertexShader;
-	ShaderObject* iVerticalBlurFragmentShader;
+	//ShaderObject* iHorizontalBlurFragmentShader;
+	////ShaderObject* iHorizontalBlurVertexShader;
+	//ShaderObject* iVerticalBlurFragmentShader;
 	ShaderObject* iBlenderFragmentShader;
 	ShaderObject* iCodecRGBEFragmentShader;
 
 	ShaderUniformValue<float> iLogAvgLum;
 
-	ShaderUniformValue<int> iTextureOriginalUniform;
-	ShaderUniformValue<int> iTextureHorizontalUniform;
-	ShaderUniformValue<int> iMipmapSizeUniform;
-	ShaderUniformValue<int> iHorizTextureSizeUniform;
-	ShaderUniformValue<float> iMipmapLevelUniform;
+	//ShaderUniformValue<int> iTextureOriginalUniform;
+	//ShaderUniformValue<int> iTextureHorizontalUniform;
+	//ShaderUniformValue<int> iMipmapSizeUniform;
+	//ShaderUniformValue<int> iHorizTextureSizeUniform;
+	//ShaderUniformValue<float> iMipmapLevelUniform;
 
-	ShaderUniformValue<float> iHorizBlurWeight1Uniform;
-	ShaderUniformValue<float> iHorizBlurWeight2Uniform;
-	ShaderUniformValue<float> iHorizBlurWeight3Uniform;
-	ShaderUniformValue<float> iVertBlurWeight1Uniform;
-	ShaderUniformValue<float> iVertBlurWeight2Uniform;
-	ShaderUniformValue<float> iVertBlurWeight3Uniform;
-	
+	//ShaderUniformValue<float> iHorizBlurWeight1Uniform;
+	//ShaderUniformValue<float> iHorizBlurWeight2Uniform;
+	//ShaderUniformValue<float> iHorizBlurWeight3Uniform;
+	//ShaderUniformValue<float> iVertBlurWeight1Uniform;
+	//ShaderUniformValue<float> iVertBlurWeight2Uniform;
+	//ShaderUniformValue<float> iVertBlurWeight3Uniform;
+
 	ShaderUniformValue<int> iBlenderOriginalTextureUniform;
 	ShaderUniformValue<int> iBlenderBlur1TextureUniform;
 	ShaderUniformValue<int> iBlenderBlur2TextureUniform;
