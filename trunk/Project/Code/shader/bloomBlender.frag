@@ -19,12 +19,19 @@ void main(void)
 	vec4 color4 = decodeRGBE(texture2D( blurTexture2,    texCoord ));
 	vec4 color5 = decodeRGBE(texture2D( blurTexture3,    texCoord ));
 
+	//vec4 color1 = texture2D( originalTexture, texCoord );
+	//vec4 color2 = texture2D( blurTexture0,    texCoord );
+	//vec4 color3 = texture2D( blurTexture1,    texCoord );
+	//vec4 color4 = texture2D( blurTexture2,    texCoord );
+	//vec4 color5 = texture2D( blurTexture3,    texCoord );
+
 	fragColor.rgb += color1.rgb;
 	fragColor.rgb += color2.rgb;
 	fragColor.rgb += color3.rgb;
 	fragColor.rgb += color4.rgb;
 	fragColor.rgb += color5.rgb;
 
-	gl_FragColor = vec4(fragColor.rgb, 1.0);
-	//gl_FragColor = encodeRGBE(fragColor);
+	gl_FragColor = encodeRGBE(fragColor);
+	//gl_FragColor = vec4(fragColor.rgb, 1.0);
+	//gl_FragColor = vec4(color5.rgb, 1.0);
 }
