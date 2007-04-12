@@ -70,7 +70,7 @@ private:
 	GLuint iMipmapSize[KNumberOfBlurLevels];
 	GLuint iMipmapDelta[KNumberOfBlurLevels];
 
-	// ########### SHADERS DECLARATIONS ###########
+	// ########### SHADERS DECLARATIONS ############
 	ShaderProgram* iHorizontalShaderProgram;
 	ShaderProgram* iVerticalShaderProgram;
 
