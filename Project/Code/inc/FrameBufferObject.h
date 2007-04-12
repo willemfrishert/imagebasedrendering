@@ -1,3 +1,5 @@
+#pragma once
+
 /**
  * @usage: Create object; bind and attach texture
  * 
