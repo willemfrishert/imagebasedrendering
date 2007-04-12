@@ -19,11 +19,11 @@ void main(void)
 
 	vec2 texCoord = gl_TexCoord[0].st;
 
-	vec4 color1 = texture2D(originalTexture, texCoord.st + vec2( -2.0, 0.0 )*delta, mipmapLevel );
-	vec4 color2 = texture2D(originalTexture, texCoord.st + vec2( -1.0, 0.0 )*delta, mipmapLevel );
-	vec4 color3 = texture2D(originalTexture, texCoord.st                          , mipmapLevel );
-	vec4 color4 = texture2D(originalTexture, texCoord.st + vec2(  1.0, 0.0 )*delta, mipmapLevel );
-	vec4 color5 = texture2D(originalTexture, texCoord.st + vec2(  2.0, 0.0 )*delta, mipmapLevel );
+	vec4 color1 = texture2D(originalTexture, texCoord.st + vec2( -2.0, 0.0 )*delta );
+	vec4 color2 = texture2D(originalTexture, texCoord.st + vec2( -1.0, 0.0 )*delta );
+	vec4 color3 = texture2D(originalTexture, texCoord.st                           );
+	vec4 color4 = texture2D(originalTexture, texCoord.st + vec2(  1.0, 0.0 )*delta );
+	vec4 color5 = texture2D(originalTexture, texCoord.st + vec2(  2.0, 0.0 )*delta );
 
 	color1 = decodeRGBE(color1);
 	color2 = decodeRGBE(color2);

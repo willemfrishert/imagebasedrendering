@@ -42,7 +42,7 @@ void main(void)
 	fragColor.rgb += blurWeight3 * color5.rgb;
 	
 	gl_FragColor = encodeRGBE(fragColor);
-//	gl_FragColor = vec4(fragColor.rgb, 1.0);
+///	gl_FragColor = vec4(fragColor.rgb, 1.0);
 //	gl_FragColor = vec4(1.0,1.0,1.0,1.0);
 //	gl_FragColor = vec4(texture2D(originalTexture, gl_TexCoord[0].xy).rgb, 1.0);
 //	gl_FragColor = texture2D(originalTexture, (fragCoord                    ) * delta );
