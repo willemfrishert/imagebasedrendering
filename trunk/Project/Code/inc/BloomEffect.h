@@ -56,7 +56,7 @@ private:
 	BlurTexture* iBlurTexture;
 	GLuint* iFinalBlurredTexture;
 
-	// ########### SHADERS DECLARATIONS ###########
+	// ########### SHADERS DECLARATIONS ##########
 	ShaderProgram* iBrightpassShaderProgram;
 	ShaderProgram* iBlenderShaderProgram;
 
