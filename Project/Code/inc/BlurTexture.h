@@ -25,21 +25,11 @@ private:
 		ETextureSize128 = 128,
 		ETextureSize64  = 64,
 		ETextureSize32  = 32,
-		ETextureSize16  = 16
-	};
-
-	enum TMipMapLevel
-	{
-		EMipMapLevel512 = 0,
-		EMipMapLevel256,
-		EMipMapLevel128,
-		EMipMapLevel64,
-		EMipMapLevel32,
-		EMipMapLevel16,
-		EMipMapLevel8,
-		EMipMapLevel4,
-		EMipMapLevel2,
-		EMipMapLevel1
+		ETextureSize16  = 16,
+		ETextureSize8   = 8,
+		ETextureSize4   = 4,
+		ETextureSize2   = 2,
+		ETextureSize1   = 1
 	};
 
 	enum TTextureID
@@ -58,7 +48,7 @@ private:
 	void InitCodecShaderObject();
 	void InitBlurShaders();
 	
-	void BlurMipmap( GLuint aTextureID, GLuint aCounter, GLuint aMipmapSize, GLuint aMipmapLevel );
+	void BlurMipmap( GLuint aTextureID, GLuint aCounter, GLuint aMipmapSize, GLuint aBlurPasses );
 
 	void RenderSceneOnQuad( GLuint aTextureID);
 	void RenderSceneOnQuad( GLuint aTextureID, GLuint aVertexSize );
@@ -75,6 +65,7 @@ private:
 	GLuint iOriginalTexture;
 	GLuint iHorizBlurredTexture[KNumberOfBlurLevels];
 	GLuint iFinalBlurredTexture[KNumberOfBlurLevels];
+	GLuint iDownScaledTexture[KNumberOfBlurLevels];
 
 	GLuint iMipmapSize[KNumberOfBlurLevels];
 	GLuint iMipmapDelta[KNumberOfBlurLevels];
@@ -91,7 +82,6 @@ private:
 	ShaderUniformValue<int> iTextureHorizontalUniform;
 	ShaderUniformValue<int> iMipmapSizeUniform;
 	ShaderUniformValue<int> iHorizTextureSizeUniform;
-	ShaderUniformValue<float> iMipmapLevelUniform;
 
 	ShaderUniformValue<float> iHorizBlurWeight1Uniform;
 	ShaderUniformValue<float> iHorizBlurWeight2Uniform;
