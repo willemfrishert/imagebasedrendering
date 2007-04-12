@@ -10,30 +10,14 @@ void main(void)
 	vec4 color = texture2D(originalTex, gl_TexCoord[0].st);
 	float luminance = texture2D(luminanceTex, gl_TexCoord[0].st).x;
 
-	float Lw = luminance / logAverage;
+	float Lw = exposure * luminance / logAverage;
+	float Ld = Lw / (Lw + 1.0);
 	
-	float dummie = logAverage * exposure;
-	//float Lw = luminance;
-	
-	/*float Ld = Lw / (Lw + 1.0);*/
-
 	color = decodeRGBE(color);
 
-	/*color *= (Ld / Lw);*/
-	
-	float n = 1.5;
-	float sigmaN = pow(exposure, n);
-	float rN = pow(color.r, n);
-	float gN = pow(color.g, n);
-	float bN = pow(color.b, n);
-	
-	color.r = rN / (rN + sigmaN);
-	color.g = gN / (gN + sigmaN);
-	color.b = bN / (bN + sigmaN);
-
-	//color.r = rN;
-	//color.g = gN;
-	//color.b = bN;
+	// power the quocient to a saturation constant s
+	vec3 saturation = pow(color.rgb/Lw, vec3(1.0));
+	color.rgb = vec3(Ld, Ld, Ld) * saturation;
 
 	gl_FragColor = color;
 }
