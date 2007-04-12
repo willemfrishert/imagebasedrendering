@@ -34,6 +34,8 @@ private:
 
 	void initShaders( string fragmentShaderFilename );
 
+	float computeCurrentExposure(float aLogLAverage, float aLogLMin, float aLogLMax);
+
 	// attributes
 private:
 
@@ -49,6 +51,7 @@ private:
 	ShaderUniformValue<int>* iLuminanceTextureUniform;
 	ShaderUniformValue<float>* iLogAverageUniform;
 	ShaderUniformValue<float>* iExposureUniform;
+	ShaderUniformValue<float>* iSensitivityUniform;
 
 	// Parallel reduction
 	GPUParallelReductor* iLogAverageCalculator;
