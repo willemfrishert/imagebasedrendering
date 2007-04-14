@@ -11,7 +11,7 @@ using namespace std;
 class CubeMap
 {
 public:
-	CubeMap(GLint nChannels, GLsizei aImageSize = 256);
+	CubeMap(GLint nChannels);
 	~CubeMap();
 
 	void setupCubeMap(string filenamePrefix);
