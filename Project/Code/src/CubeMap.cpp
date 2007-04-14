@@ -44,9 +44,8 @@ static int faces[6][4] = {
 	{0, 1, 2, 3}, // front
 };
 
-CubeMap::CubeMap(GLint nChannels, GLsizei aImageSize /* = 256 */)
-: imageSize( aImageSize )
-, positiveX( NULL )
+CubeMap::CubeMap(GLint nChannels)
+: positiveX( NULL )
 , positiveY( NULL )
 , positiveZ( NULL )
 , negativeX( NULL )
@@ -141,13 +140,6 @@ void CubeMap::extractFaces(float **columns, int height, int width)
 		int index2	= (imageSize - i - 1) * imageSize * channels;
 
 		// Face copy
-		//memcpy(&(positiveY[index2]), &columns[0][index], sizeof(float) * imageSize * channels);
-		//memcpy(&(positiveZ[index2]), &columns[1][index], sizeof(float) * imageSize * channels);
-		//memcpy(&(negativeX[index2]), &columns[2][index], sizeof(float) * imageSize * channels);
-		//memcpy(&(positiveX[index2]), &columns[3][index], sizeof(float) * imageSize * channels);
-		//memcpy(&(negativeY[index2]), &columns[4][index], sizeof(float) * imageSize * channels);
-		//memcpy(&(negativeZ[index2]), &columns[5][index], sizeof(float) * imageSize * channels);
-
 		memcpy(&(pY[index2]), &columns[0][index], sizeof(float) * imageSize * channels);
 		memcpy(&(pZ[index2]), &columns[1][index], sizeof(float) * imageSize * channels);
 		memcpy(&(nX[index2]), &columns[2][index], sizeof(float) * imageSize * channels);
@@ -206,6 +198,9 @@ void CubeMap::setupCompressedCubeMap(string filenamePrefix,
 		maxExponent = hdrPic.maxExponent > maxExponent ? hdrPic.maxExponent : maxExponent;
 	}
 
+	// set the image size based on the read information
+	this->imageSize = hdrPic.height;
+
 	extractFaces(faces, hdrPic.height, hdrPic.width);
 
 	for (int i = 0; i < 6; i++)
@@ -255,6 +250,9 @@ void CubeMap::setupCubeMap(string filenamePrefix)
 		HDRLoader::load((filenamePrefix + suffixes[i]).c_str(), hdrPic);
 		faces[i] = hdrPic.cols;
 	}
+
+	// set the image size based on the read information
+	this->imageSize = hdrPic.height;
 
 	extractFaces(faces, hdrPic.height, hdrPic.width);
 
