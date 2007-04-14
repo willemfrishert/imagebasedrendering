@@ -9,6 +9,7 @@
 #include "ShaderUniformObject.h"
 #include "ShaderUniformValue.h"
 #include "ShaderUniformVector.h"
+#include "glm_avl.h"
 
 
 class VirtualTrackball;
@@ -18,6 +19,7 @@ class ScreenCapture;
 class LuminanceConverter;
 class PhotographicToneMapper;
 class IBLPerfectReflection;
+class Mesh;
 
 //CONSTANTS:
 const int KNumberOfColorMaps = 3;
@@ -188,6 +190,10 @@ private:
 	IBLPerfectReflection* iIBLReflection;
 
 	VirtualTrackball trackball;
+
+	GLUquadricObj* pObj;
+	Mesh* iDragon3DS;
+	GLMmodel* iDragonOBJ;
 };
 
 
