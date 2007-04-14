@@ -13,7 +13,7 @@ PhotographicToneMapper::PhotographicToneMapper(GLuint aOriginalTexture, GLuint a
 , iLuminanceTexture( aLuminanceTexture )
 , iWidth( aWidth )
 , iHeight( aHeight )
-, iInvalidateExposure( true )
+, iPreviousExposure( 1.0 )
 {
 	this->iLogAverageCalculator = new GPUParallelReductor(aWidth, aHeight, 
 		"./shader/logsumFP.frag", GL_RGBA_FLOAT32_ATI);
@@ -97,16 +97,11 @@ float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float 
 	float Log2LMin = Utility::log2(aMinLuminance);
 	float Log2LMax = Utility::log2(aMaxLuminance);
 	float f = (2 * Utility::log2(aLogLAverage) - Log2LMin - Log2LMax) / (Log2LMax - Log2LMin);
-	float key = 0.06f * pow(4.0f, f);
+	float key = 1.0f * pow(4.0f, f);
 
-	if ( iInvalidateExposure )
-	{
-		iInvalidateExposure = false;
-		iPreviousExposure = 1.0;
-	}
-
-	// 
-	float correctExposure = log(aLogLAverage / key);
+	/*float correctExposure = log(aLogLAverage / key);*/
+	
+	float correctExposure = key;
 	Utility::clamp(correctExposure, 0.18f, correctExposure);
 	
 	float deltaExposure = correctExposure - iPreviousExposure;
@@ -124,7 +119,7 @@ float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float 
 
 	iPreviousExposure = currentExposure;
 
-	return key;
+	return currentExposure;
 }
 
 void PhotographicToneMapper::enableMultitexturing( GLuint aOriginalTexture,  GLuint aLuminanceTexture )
@@ -201,9 +196,9 @@ void PhotographicToneMapper::initShaders( string fragmentShaderFilename )
 	iLuminanceTextureUniform	= new ShaderUniformValue<int>();
 	iLogAverageUniform			= new ShaderUniformValue<float>();
 	iExposureUniform			= new ShaderUniformValue<float>();
-	iSensitivityUniform			= new ShaderUniformValue<float>();
 
 	iFragmentShader				= new ShaderObject(GL_FRAGMENT_SHADER, fragmentShaderFilename);
+	iCodecRGBEFragmentShader	= new ShaderObject(GL_FRAGMENT_SHADER, "./shader/codecRGBE.frag");
 
 	// Initialize Uniform Variables
 	iOriginalTextureUniform->setValue( 0 );
@@ -218,10 +213,8 @@ void PhotographicToneMapper::initShaders( string fragmentShaderFilename )
 	iExposureUniform->setValue( 1.0f );
 	iExposureUniform->setName("exposure");
 
-	iSensitivityUniform->setValue( 0.8f );
-	iSensitivityUniform->setName("sensitivity");
-
 	iShaderProgram->attachShader( *iFragmentShader );
+	iShaderProgram->attachShader( *iCodecRGBEFragmentShader );
 	iShaderProgram->addUniformObject( iOriginalTextureUniform );
 	iShaderProgram->addUniformObject( iLuminanceTextureUniform );
 	iShaderProgram->addUniformObject( iLogAverageUniform );
