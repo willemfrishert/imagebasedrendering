@@ -47,16 +47,15 @@ private:
 	// shader stuff
 	ShaderProgram* iShaderProgram;
 	ShaderObject* iFragmentShader;
+	ShaderObject* iCodecRGBEFragmentShader;
 	ShaderUniformValue<int>* iOriginalTextureUniform;
 	ShaderUniformValue<int>* iLuminanceTextureUniform;
 	ShaderUniformValue<float>* iLogAverageUniform;
 	ShaderUniformValue<float>* iExposureUniform;
-	ShaderUniformValue<float>* iSensitivityUniform;
 
 	// Parallel reduction
 	GPUParallelReductor* iLogAverageCalculator;
 	
 	// Exposure settings
 	float iPreviousExposure;
-	bool iInvalidateExposure;
 };
