@@ -21,17 +21,19 @@ static const string suffixes[] = {
 	SUFFIX_NEGZ
 };
 
+static const float cubeSide = 10.0f;
+
 static float vertices[8][3] = {
 
-	{-1.0f,  1.0f, -1.0f}, // l t f
-	{-1.0f, -1.0f, -1.0f}, // l b f
-	{ 1.0f, -1.0f, -1.0f}, // r b f
-	{ 1.0f,  1.0f, -1.0f}, // r t f
+	{-cubeSide,  cubeSide, -cubeSide}, // l t f
+	{-cubeSide, -cubeSide, -cubeSide}, // l b f
+	{ cubeSide, -cubeSide, -cubeSide}, // r b f
+	{ cubeSide,  cubeSide, -cubeSide}, // r t f
 
-	{-1.0f,  1.0f,  1.0f}, // l t b
-	{-1.0f, -1.0f,  1.0f}, // l b b
-	{ 1.0f, -1.0f,  1.0f}, // r b b
-	{ 1.0f,  1.0f,  1.0f}, // r t b
+	{-cubeSide,  cubeSide,  cubeSide}, // l t b
+	{-cubeSide, -cubeSide,  cubeSide}, // l b b
+	{ cubeSide, -cubeSide,  cubeSide}, // r b b
+	{ cubeSide,  cubeSide,  cubeSide}, // r t b
 };
 
 static int faces[6][4] = {
