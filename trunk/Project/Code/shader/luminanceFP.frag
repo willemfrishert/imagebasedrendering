@@ -26,16 +26,5 @@ void main(void)
 
 float computeLuminance(vec4 color)
 {
-	float maxRGB = max(max(color.r, color.g), color.b);
-	float minRGB = min(min(color.r, color.g), color.b);
-
-	return 0.5 * (maxRGB + minRGB);
-}
-
-vec4 decodeRGBE(vec4 color)
-{
-	float exponent = exp2(color.a * 255.0 - 128.0);
-	color.rgb *= exponent;
-	color.a = 1.0;
-	return color;
+	return dot(vec3(0.27, 0.67, 0.06), color.rgb);
 }
