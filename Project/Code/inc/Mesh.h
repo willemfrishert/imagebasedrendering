@@ -37,36 +37,12 @@ public:
 	Vertex& geVertex(int aIndex = -1);
 	int getIndicesCount() const;
 	void getTriangleIndices(const GLuint* aTriangleIndices, GLuint* aVertexIndices) const;
-
-	void setBinormalAttributeObject(ShaderAttributeObject* aBinormal);
-	void setTBNNormalAttributeObject(ShaderAttributeObject* aTBNNormal);
-	void setTangentAttributeObject(ShaderAttributeObject* aTangent);
-
-	void createInverseTBNMatrices();
-  
-	//PRIVATE METHODS
-private:
-	void createInverseTBNMatrix(Vertex& aVertex0, const Vertex& aVertex1, 
-		const Vertex& aVertex2);
-
-	bool biasToZero(float& aValue);
-
-  //PUBLIC VARIABLES
-public:
     
   //PRIVATE VARIABLES
 private:
 	vector<Vertex> iVertices;
 	vector<GLuint> iIndices;
 	int iIndicesCount;
-	
-	/**
-	 * The vertex attributes shader location, 
-	 * for tangent, normal  and binormal (all in Tangent space)
-	 */
-	ShaderAttributeObject* iVertexTangentAttribObject;
-	ShaderAttributeObject* iVertexTBNNormalAttribObject;
-	ShaderAttributeObject* iVertexBinormalAttribObject;
 };
 
 /**
@@ -135,21 +111,4 @@ void Mesh::addTriangleIndices(const int& aIndex1, const int& aIndex2, const int&
 	this->iIndices.push_back( aIndex3 );
 
 	this->iIndicesCount+=3;
-}
-
-/**
- * @description bias the value if it is between [-0.001f, 0.001f]
- * @param aValue the value to be eventually biased
- * @return true if the value was biased to zero; false otherwise
- */
-inline
-bool Mesh::biasToZero(float& aValue)
-{
-	if ( fabs( aValue ) < 0.001f )
-	{
-		aValue = 0.0f;
-		return true;	
-	}
-	
-	return false;
 }
