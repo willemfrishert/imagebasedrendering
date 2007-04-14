@@ -1,19 +1,6 @@
 uniform samplerCube cubeMap;
 
-vec4 decodeRGBE(vec4 color)
-{
-	// scale: max - min, bias: min
-	//float scale = 7.0 / 255.0;
-	//float bias	= 122.0 / 255.0;
-	//vec2 scaleBias = vec2(scale, -scale/bias);
-	//
-	//vec3 decodedColor = color.rgb * exp2(color.a * scaleBias.x + scaleBias.y);
-
-	//return vec4(decodedColor, 1.0);
-
-	float exponent = exp2(color.a * 256.0 - 128.0);
-	return color * exponent;
-}
+vec4 decodeRGBE(vec4 color);
 
 void main(void)
 {
