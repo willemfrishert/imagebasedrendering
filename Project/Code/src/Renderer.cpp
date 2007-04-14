@@ -11,6 +11,8 @@
 #include "LuminanceConverter.h"
 #include "GPUParallelReductor.h"
 #include "IBLPerfectReflection.h"
+#include "Mesh.h"
+//#include "3ds.h"
 #include "PhotographicToneMapper.h"
 
 
@@ -85,7 +87,6 @@ void Renderer::InitMain()
 	glShadeModel(GL_SMOOTH);
 	glEnable(GL_CULL_FACE); // Enable the back face culling
 	glEnable(GL_DEPTH_TEST); // Enable the depth test (z-buffer)
-
 }
 
 /** \brief Method that creates a mesh
@@ -110,7 +111,23 @@ void Renderer::CreateScene()
 
 	this->iToneMapper = new PhotographicToneMapper(0, 0, KTextureWidth, KTextureHeight);
 
-	this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection.vert", "./textures/stpeters_panorama1024.hdr");
+	this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection", 
+		"./textures/stpeters_panorama1024_3.hdr");
+
+	//Load3ds loader;
+	//iDragon3DS = loader.CreateUsingATI("./3ds/2HeadedDragon2.3ds");
+
+	pObj = gluNewQuadric();
+
+	gluQuadricDrawStyle(pObj, GLU_FILL);
+	gluQuadricNormals(pObj, GLU_SMOOTH);
+	gluQuadricTexture(pObj, GL_TRUE);
+
+	iDragonOBJ = glmReadOBJ("./3ds/2HeadedDragon50K.obj");
+	glmUnitize(iDragonOBJ);
+	glmFacetNormals(iDragonOBJ);
+	glmVertexNormals(iDragonOBJ, 60.0f);
+
 }
 
 /** \brief Method that calculates iFrames per second
@@ -231,44 +248,69 @@ void Renderer::RenderScene()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	gluLookAt(0.0f, 0.0f, 2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
 	glPushMatrix();
 	{
-		glTranslatef(0, 0, iZoom);
+		//glTranslatef(0, 0, iZoom);
 
 		/************************************************************************/
 		/* OPTMIZE PLEASE!!!                                                    */
 		/************************************************************************/
+		glPushMatrix();
+		{
+			trackballMatrix = trackball.getRotationMatrix( );
+			trackballMatrix.getGLMatrix( trackballMatrixGL );
+			
+			float inverseGL[16];
+			Matrix4 inverse = Matrix4::inverse( trackballMatrix );
+			inverse.getGLMatrix( inverseGL );
 
-		trackballMatrix = trackball.getRotationMatrix( );
-		trackballMatrix.getGLMatrix( trackballMatrixGL );
+			//glMultMatrixf( inverseGL );
+			//iCubeMap->render( trackballMatrixGL );
+
+			glMultMatrixf( trackballMatrixGL );
+			iCubeMap->render( inverseGL );
+		}
+		glPopMatrix();
+
+		//float inverseGL[16];
+		//Matrix4 inverse = Matrix4::inverse( trackballMatrix );
+		//inverse.getGLMatrix( inverseGL );
 		glMultMatrixf( trackballMatrixGL );
-
-		float inverseGL[16];
-		Matrix4 inverse = Matrix4::inverse( trackballMatrix );
-		inverse.getGLMatrix( inverseGL );
-
-		//iCubeMap->render( inverseGL );
 
 		iIBLReflection->start();
 		{
-			glutSolidSphere(0.25, 32, 32);
+			glPushMatrix();
+			{
+				//glEnable()
+				//glTranslatef(0, 0, -1);
+				gluSphere(pObj, 0.5, 128, 128);
+				//glmDraw(iDragonOBJ, GLM_SMOOTH);
+				
+			}
+			glPopMatrix();
+			//gluSphere(pObj, 0.3, 128, 128);
+			//glutSolidTeapot(0.25);
+			//glutSolidTorus(0.05, 0.25, 32 ,32);
+			//glutSolidSphere(0.5, 128, 128);
 		}
 		iIBLReflection->stop();
+		
 	}
 	glPopMatrix();
 
 	// unbind and render
 	GLuint capturedSceneTexId = iScreenCapture->stopCapture();
 
-	//GLuint finalScene = iLuminanceConverter->processData(capturedSceneTexId);
+	GLuint finalScene = iLuminanceConverter->processData(capturedSceneTexId);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	//iToneMapper->toneMap(capturedSceneTexId, finalScene);
+	iToneMapper->toneMap(capturedSceneTexId, finalScene);
 
-	RenderSceneOnQuad(capturedSceneTexId, GL_TEXTURE_2D, 512, 512);
+	//RenderSceneOnQuad(capturedSceneTexId, GL_TEXTURE_2D, 512, 512);
 
 	//iScreenCapture->renderToScreen();
 
