@@ -98,6 +98,10 @@ void GPUParallelReductor::setupTexture(GLuint textureId, const GLvoid* data)
 	glTexParameteri(GPU_REDUCTOR_TEXTURE_TARGET, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameteri(GPU_REDUCTOR_TEXTURE_TARGET, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
+	/*
+	 * NOTE: The internalFormat is, by default, GL_RGB_FLOAT32_ATI, because the buffer
+	 * might be used to accumulate large values and FP16 can only reach 65536
+	 */
 	glTexImage2D(GPU_REDUCTOR_TEXTURE_TARGET,  // Need to use texture rectangle to get GPU-side floats
 		0,						// Mipmap level 0
 		internalFormat,			// Store on GPU as 3-component float (internalFormat)
@@ -194,6 +198,7 @@ void GPUParallelReductor::processData( GLuint originalTexId, float* result )
 void GPUParallelReductor::renderSceneOnQuad(GLuint textureId, 
 					   GLenum target, int width, int height)
 {
+	glEnable(target);
 	/************************************************************************/
 	/* CAN PASS THIS TO OUTSIDE, MORE EFFICIENT TO JUST CALL ONCE           */
 	/************************************************************************/
