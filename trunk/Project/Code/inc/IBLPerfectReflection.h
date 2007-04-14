@@ -27,6 +27,7 @@ private:
 private:
 	ShaderProgram* iShaderProgram;
 	ShaderObject* iFragmentShader;
+	ShaderObject* iVertexShader;
 	ShaderUniformValue<int>* iIrradianceMapUniform;
 
 	GLuint iIrradianceMapTexId;
