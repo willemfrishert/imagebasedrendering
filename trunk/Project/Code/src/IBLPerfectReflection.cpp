@@ -3,6 +3,7 @@
 #include "ShaderObject.h"
 #include "ShaderUniformValue.h"
 #include "ShaderProgram.h"
+#include "CodecRGBE.h"
 #include "IBLPerfectReflection.h"
 
 #include "hdrloader.h"
@@ -84,6 +85,7 @@ void IBLPerfectReflection::initShaders(const string& ashaderFilename)
 
 	iShaderProgram->attachShader( *iFragmentShader );
 	iShaderProgram->attachShader( *iVertexShader );
+	iShaderProgram->attachShader( *CodecRGBE::getShaderObject() );
 	iShaderProgram->addUniformObject( iIrradianceMapUniform );
 
 	// after all the shaders have been attached
