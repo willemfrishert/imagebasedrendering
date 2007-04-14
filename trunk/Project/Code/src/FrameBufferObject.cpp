@@ -92,6 +92,14 @@ void FrameBufferObject::attachTexture( GLuint texture, GLenum attachment,
 #endif // _DEBUG
 }
 
+/**
+* @param attachment
+*/
+void FrameBufferObject::attachTextureAttachment(const FBOTextureAttachment& aFBOTexAttach)
+{
+	this->attachTexture( aFBOTexAttach.id, aFBOTexAttach.attachment, aFBOTexAttach.target, aFBOTexAttach.mipmapLevel );
+}
+
 void FrameBufferObject::attachDepthBuffer(GLuint depthBufferId)
 {
 	glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
