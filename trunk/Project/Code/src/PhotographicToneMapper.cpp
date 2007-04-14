@@ -4,6 +4,7 @@
 #include "ShaderProgram.h"
 #include "GPUParallelReductor.h"
 #include "Utility.h"
+#include "CodecRGBE.h"
 
 #include "PhotographicToneMapper.h"
 
@@ -198,7 +199,6 @@ void PhotographicToneMapper::initShaders( string fragmentShaderFilename )
 	iExposureUniform			= new ShaderUniformValue<float>();
 
 	iFragmentShader				= new ShaderObject(GL_FRAGMENT_SHADER, fragmentShaderFilename);
-	iCodecRGBEFragmentShader	= new ShaderObject(GL_FRAGMENT_SHADER, "./shader/codecRGBE.frag");
 
 	// Initialize Uniform Variables
 	iOriginalTextureUniform->setValue( 0 );
@@ -214,7 +214,7 @@ void PhotographicToneMapper::initShaders( string fragmentShaderFilename )
 	iExposureUniform->setName("exposure");
 
 	iShaderProgram->attachShader( *iFragmentShader );
-	iShaderProgram->attachShader( *iCodecRGBEFragmentShader );
+	iShaderProgram->attachShader( *CodecRGBE::getShaderObject() );
 	iShaderProgram->addUniformObject( iOriginalTextureUniform );
 	iShaderProgram->addUniformObject( iLuminanceTextureUniform );
 	iShaderProgram->addUniformObject( iLogAverageUniform );
