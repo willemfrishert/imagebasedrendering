@@ -121,8 +121,8 @@ void LuminanceConverter::renderSceneOnQuad(GLuint textureId, GLenum target)
  */
 GLuint LuminanceConverter::processData(GLuint inputTextureId)
 {
-	//// enable the texture rectangle
-	//glEnable(LUMINANCE_TEXTURE_TARGET);
+	// enable the texture rectangle
+	glEnable(LUMINANCE_TEXTURE_TARGET);
 
 	// bind it and specify to which color attachment we 
 	// want to draw to (always the same - textures permute)
