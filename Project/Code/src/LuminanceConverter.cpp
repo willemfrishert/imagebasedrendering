@@ -4,6 +4,7 @@
 #include "ShaderUniformValue.h"
 #include "ShaderUniformVector.h"
 #include "ShaderProgram.h"
+#include "CodecRGBE.h"
 #include "LuminanceConverter.h"
 
 GLenum LuminanceConverter::LUMINANCE_TEXTURE_TARGET = GL_TEXTURE_2D;
@@ -68,6 +69,7 @@ void LuminanceConverter::initShaders( )
 	iInputTextureUniform->setName("inputTexture");
 
 	iShaderProgram->attachShader( *iFragmentShader );
+	iShaderProgram->attachShader( *CodecRGBE::getShaderObject() );
 	iShaderProgram->addUniformObject( iInputTextureUniform );
 
 	// after all the shaders have been attached
