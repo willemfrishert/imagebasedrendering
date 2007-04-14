@@ -42,7 +42,7 @@ void IBLPerfectReflection::stop()
  */
 void IBLPerfectReflection::setupIrradianceMapTexture(const string& aPanoramaFilename)
 {
-	HDRLoaderResult hdrPic;
+	HDRLoaderResultEncoded hdrPic;
 	HDRLoader::load(aPanoramaFilename.c_str(), hdrPic);
 
 	glEnable(GL_TEXTURE_2D);
@@ -59,12 +59,12 @@ void IBLPerfectReflection::setupIrradianceMapTexture(const string& aPanoramaFile
 	// NOTE: as opposed to what they say in the extension description of 
 	// GL_TEXTURE_RECTANGLE_ARB, ATI seems to not support 
 	// the GL_REPEAT for wrapping modes
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16, 1024, 
-		512, 0, GL_RGB, GL_FLOAT, hdrPic.cols);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, hdrPic.width, 
+		hdrPic.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, hdrPic.cols);
 }
 
 /**
@@ -75,14 +75,15 @@ void IBLPerfectReflection::initShaders(const string& ashaderFilename)
 	iShaderProgram			= new ShaderProgram();
 	iIrradianceMapUniform	= new ShaderUniformValue<int>();
 
-	iFragmentShader			= new ShaderObject(GL_VERTEX_SHADER, ashaderFilename);
+	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, ashaderFilename + ".frag");
+	iVertexShader			= new ShaderObject(GL_VERTEX_SHADER, ashaderFilename + ".vert");
 
 	// Uniforms
 	iIrradianceMapUniform->setValue( 0 );
 	iIrradianceMapUniform->setName("irradianceMap");
 
 	iShaderProgram->attachShader( *iFragmentShader );
-	iShaderProgram->attachShader( ShaderObject(GL_FRAGMENT_SHADER, "./shader/dummie.frag") );
+	iShaderProgram->attachShader( *iVertexShader );
 	iShaderProgram->addUniformObject( iIrradianceMapUniform );
 
 	// after all the shaders have been attached
