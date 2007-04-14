@@ -18,17 +18,8 @@ ScreenCapture::ScreenCapture(int width, int height)
 	iCaptureFBO->bind();
 	iCaptureFBO->attachTexture(iCaptureTexture, GL_COLOR_ATTACHMENT0_EXT, screenCaptureTexTarget, 0);
 
-	/************************************************************************/
-	/* XXX: ACCORDING TO WILL, NOT FULLY TESTED :P                          */
-	/************************************************************************/
 	iCaptureFBO->attachDepthRenderBuffer(width, height);
 	FrameBufferObject::unbind();
-
-
-	/************************************************************************/
-	/*                                                                      */
-	/************************************************************************/
-
 
 	iShaderProgram			= new ShaderProgram();
 	iInputTextureUniform	= new ShaderUniformValue<int>();
