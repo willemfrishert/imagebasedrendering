@@ -35,6 +35,11 @@ LuminanceConverter::LuminanceConverter(int width, int height,
 
 LuminanceConverter::~LuminanceConverter(void)
 {
+	delete iFbo;
+	delete iFragmentShader;
+	delete iShaderProgram;
+	delete iInputTextureUniform;
+	glDeleteTextures(1, &iLuminanceTexture);
 }
 
 void LuminanceConverter::setupTexture(GLuint textureId, const GLvoid* data)
