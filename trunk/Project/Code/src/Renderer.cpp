@@ -194,30 +194,36 @@ void Renderer::DrawText() const
 	float x( -0.9f ), y( -0.9f );
 	
 	//configure the transforms for 2D
-	glMatrixMode( GL_PROJECTION );
-
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D( -1.0f, 1.0f, -1.0f, 1.0f);
-
-	glDisable(GL_LIGHTING);
-	glDisable( GL_TEXTURE_2D );
-	glDisable(GL_DEPTH_TEST);
-
-	glColor3f(1.0, 0.0, 0.0);
-	glRasterPos2f(x, y);
-
-	for (int i = 0, len = static_cast<int>( strlen(iFpsCountString) ); i < len; i++)
-	{
-		//glutBitmapCharacter(GLUT_BITMAP_9_BY_15, iFpsCountString[i] );
-		glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, iFpsCountString[i] );
-	}
-	//glFlush();
-	glEnable(GL_LIGHTING);
-	glEnable(GL_DEPTH_TEST);
-
-	glPopMatrix();
 	glMatrixMode( GL_MODELVIEW );
+	glPushMatrix();
+	{
+		glLoadIdentity();
+
+		glMatrixMode( GL_PROJECTION );
+		glPushMatrix();
+		{
+				glLoadIdentity();
+				gluOrtho2D( -1.0f, 1.0f, -1.0f, 1.0f);
+			
+				glDisable(GL_LIGHTING);
+				glDisable( GL_TEXTURE_2D );
+				glDisable(GL_DEPTH_TEST);
+			
+				glColor3f(1.0, 0.0, 0.0);
+				glRasterPos2f(x, y);
+			
+				for (int i = 0, len = static_cast<int>( strlen(iFpsCountString) ); i < len; i++)
+				{
+					glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, iFpsCountString[i] );
+				}
+				//glFlush();
+				glEnable(GL_LIGHTING);
+				glEnable(GL_DEPTH_TEST);
+		}
+		glPopMatrix(); // PROJECTION
+	}
+	glMatrixMode( GL_MODELVIEW );
+	glPopMatrix(); // MODELVIEW
 }
 
 
@@ -284,7 +290,6 @@ void Renderer::RenderScene()
 			glPushMatrix();
 			{
 				//glEnable()
-				//glTranslatef(0, 0, -1);
 				gluSphere(pObj, 0.5, 128, 128);
 				//glmDraw(iDragonOBJ, GLM_SMOOTH);
 				
