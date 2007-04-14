@@ -1,10 +1,6 @@
 #pragma once
 
-#ifdef _DEBUG
-#define CHECK_GL_ERROR() Utility::CheckGLError(__FILE__, __LINE__)
-#else
-#define CHECK_GL_ERROR()
-#endif
+
 
 class Utility
 {
@@ -34,22 +30,5 @@ public:
 		{
 			v = upperThreshold;
 		}
-	}
-
-	// GL ERROR CHECK
-	static inline int CheckGLError(char *aFile, int aLine)
-	{
-		int result = 0;
-		GLenum glError = glGetError();
-
-		while (glError != GL_NO_ERROR)
-		{
-			cout << "Error in file " << aFile << " at line: " << aLine << endl;
-			cout << "GL Error #" << glError << ": " << gluErrorString(glError) << endl << endl;
-			result = 1;
-			glError = glGetError();
-		}
-
-		return result;
 	}
 };
