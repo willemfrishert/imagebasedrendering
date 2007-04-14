@@ -6,6 +6,15 @@
  * @file FrameBufferObject.h
  * @author João Pedro Jorge
  */
+
+struct FBOTextureAttachment
+{
+	GLuint id;
+	GLenum attachment;
+	GLenum target;
+	GLint mipmapLevel;
+};
+
 class FrameBufferObject
 {
 public:
@@ -13,6 +22,7 @@ public:
 	~FrameBufferObject(void);
 
 	void attachTexture(GLuint texture, GLenum attachment, GLenum textarget, GLint mipmapLevel);
+	void attachTextureAttachment(const FBOTextureAttachment& attachment);
 	void attachDepthBuffer(GLuint depthBufferId);
 	void attachDepthRenderBuffer(GLuint aWidth, GLuint aHeight);
 
