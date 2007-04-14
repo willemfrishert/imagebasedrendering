@@ -18,6 +18,8 @@ public:
 
 	void setValue(T value);
 
+	void set(char* name, T value);
+
 	T getValue() const;
 	
 	virtual void use();
@@ -55,6 +57,13 @@ template <class T>
 T ShaderUniformValue<T>::getValue() const
 {
 	return this->value;
+}
+
+template <class T>
+void ShaderUniformValue<T>::set(char* name, T value)
+{
+	this->setName(name);
+	this->setValue(value);
 }
 
 template <class T>
