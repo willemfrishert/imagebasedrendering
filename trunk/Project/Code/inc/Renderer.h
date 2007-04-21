@@ -147,6 +147,8 @@ private:
 	void RenderSceneOnQuad(GLuint textureId, GLenum target, 
 		int width, int height);
 
+	void createDragonDL();
+
 
 	//DRAWING FUNCTIONS
 	//------------------
@@ -192,8 +194,8 @@ private:
 	VirtualTrackball trackball;
 
 	GLUquadricObj* pObj;
-	Mesh* iDragon3DS;
-	GLMmodel* iDragonOBJ;
+	Mesh* iDragon;
+	GLuint iDragonDL;
 };
 
 
