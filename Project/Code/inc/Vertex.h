@@ -17,8 +17,6 @@ class Vertex
 public:
 	Vertex(void);
 	Vertex(const Vector3<float>& aNormal, const Vector3<float>& aPosition, const Vector2<float>& aTexCoord);
-	Vertex(const Vector3<float>& aNormal, const Vector3<float>& aPosition, const Vector2<float>& aTexCoord, 
-		const Vector3<float>& aBinormal, const Vector3<float>& aTangent);
 
 	~Vertex(void);
 
@@ -29,10 +27,4 @@ public:
 	Vector3<float> iNormal;
 
 	Vector2<float> iTexCoord;
-
-	Vector3<float> iTBNNormal;
-
-	Vector3<float> iBinormal;
-
-	Vector3<float> iTangent;
 };
