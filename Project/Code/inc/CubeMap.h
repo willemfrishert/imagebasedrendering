@@ -5,6 +5,7 @@
 typedef unsigned int GLuint;
 typedef int GLsizei;
 typedef int GLint;
+typedef unsigned int GLenum;
 
 using namespace std;
 
@@ -19,12 +20,16 @@ public:
 
 	void render(float* inverseTransMatrix);
 
+	inline GLuint getCubeMapId() { return iCubeTexId; };
+
 	// methods
 private:
 
 	void extractFaces(float** columns, int height, int width);
 
 	void extractFaces(unsigned char** columns, int height, int width);
+
+	void setupCubeMapTextures(GLenum type, GLenum format);
 
 	// attributes
 private:
@@ -51,5 +56,7 @@ private:
 	 */
 	GLint channels;
 
-	GLint format;
+	GLint iInternaFormat;
+
+	GLuint iCubeTexId;
 };
