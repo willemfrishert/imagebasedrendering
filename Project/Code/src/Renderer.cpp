@@ -12,7 +12,7 @@
 #include "GPUParallelReductor.h"
 #include "IBLPerfectReflection.h"
 #include "Mesh.h"
-//#include "3ds.h"
+#include "OBJMeshLoader.h"
 #include "PhotographicToneMapper.h"
 
 
@@ -66,6 +66,16 @@ Renderer::~Renderer()
 	delete iCubeMap;
 	delete iToneMapper;
 	delete iIBLReflection;
+
+	if (iDragon)
+	{
+		delete iDragon;
+	}
+
+	if (pObj)
+	{
+		gluDeleteQuadric(pObj);
+	}
 }
 
 void Renderer::InitShaders()
@@ -111,11 +121,10 @@ void Renderer::CreateScene()
 
 	this->iToneMapper = new PhotographicToneMapper(0, 0, KTextureWidth, KTextureHeight);
 
+	//this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection", 
+	//	"./textures/stpeters_conv_phong_100.hdr");
 	this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection", 
 		"./textures/stpeters_panorama1024_3.hdr");
-
-	//Load3ds loader;
-	//iDragon3DS = loader.CreateUsingATI("./3ds/2HeadedDragon2.3ds");
 
 	pObj = gluNewQuadric();
 
@@ -123,11 +132,24 @@ void Renderer::CreateScene()
 	gluQuadricNormals(pObj, GLU_SMOOTH);
 	gluQuadricTexture(pObj, GL_TRUE);
 
-	iDragonOBJ = glmReadOBJ("./3ds/2HeadedDragon50K.obj");
-	glmUnitize(iDragonOBJ);
-	glmFacetNormals(iDragonOBJ);
-	glmVertexNormals(iDragonOBJ, 60.0f);
+	createDragonDL();
+}
 
+void Renderer::createDragonDL() 
+{
+	iDragon = OBJLoader::loadModel("./3ds/2HeadedDragon50K.obj");
+
+	// Create the id for the list
+	iDragonDL = glGenLists(1);
+
+	// start list
+	glNewList(iDragonDL,GL_COMPILE);
+
+		// call the function that contains the rendering commands
+		iDragon->draw();
+
+	// endList
+	glEndList();
 }
 
 /** \brief Method that calculates iFrames per second
@@ -285,17 +307,29 @@ void Renderer::RenderScene()
 		//inverse.getGLMatrix( inverseGL );
 		glMultMatrixf( trackballMatrixGL );
 
-		iIBLReflection->start();
+		iIBLReflection->start( iCubeMap->getCubeMapId() );
 		{
-			glPushMatrix();
-			{
-				//glEnable()
-				gluSphere(pObj, 0.5, 128, 128);
-				//glmDraw(iDragonOBJ, GLM_SMOOTH);
-				
-			}
-			glPopMatrix();
-			//gluSphere(pObj, 0.3, 128, 128);
+			//glBegin(GL_QUADS);
+			//	glTexCoord2i(0, 0);
+			//	glVertex2f(0.0f, 0.0f);
+
+			//	glTexCoord2i(1, 0);
+			//	glVertex2f(0.5f, 0.0f);
+
+			//	glTexCoord2i(1, 1);
+			//	glVertex2f(0.5f, 0.5f);
+
+			//	glTexCoord2i(0, 1);
+			//	glVertex2f(0.0f, 0.5f);
+			//glEnd();
+			//gluSphere(pObj, 0.5, 128, 128);
+			
+			//glCallList(iDragonDL);
+			
+			//iDragon->draw();
+			
+			gluSphere(pObj, 0.3, 128, 128);
+			
 			//glutSolidTeapot(0.25);
 			//glutSolidTorus(0.05, 0.25, 32 ,32);
 			//glutSolidSphere(0.5, 128, 128);
