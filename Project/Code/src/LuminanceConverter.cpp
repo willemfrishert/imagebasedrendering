@@ -36,6 +36,7 @@ LuminanceConverter::LuminanceConverter(int width, int height,
 LuminanceConverter::~LuminanceConverter(void)
 {
 	delete iFbo;
+	delete iFbo;
 	delete iFragmentShader;
 	delete iShaderProgram;
 	delete iInputTextureUniform;
