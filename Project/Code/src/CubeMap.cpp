@@ -1,9 +1,11 @@
 #include <gl/glew.h>
-#include <gl/glut.h>
 #include <stdio.h>
 #include "CubeMap.h"
-
 #include "hdrloader.h"
+
+// NOTE: it needs to be here so we don't get the exit() function error
+// not a good solution though
+#include <gl/glut.h>
 
 #define SUFFIX_POSX "_posx.hdr"
 #define SUFFIX_POSY "_posy.hdr"
@@ -57,11 +59,11 @@ CubeMap::CubeMap(GLint nChannels)
 {
 	if (nChannels == 3)
 	{
-		this->format = GL_RGB;
+		this->iInternaFormat = GL_RGB;
 	}
 	else
 	{
-		this->format = GL_RGBA16;
+		this->iInternaFormat = GL_RGBA16;
 	}
 }
 
@@ -82,6 +84,8 @@ void CubeMap::render( float* inverseTransMatrix )
 	glEnable(GL_TEXTURE_GEN_R);
 	glEnable(GL_TEXTURE_CUBE_MAP);   
 	glEnable(GL_AUTO_NORMAL);
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, iCubeTexId);
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix(); // Modelview
@@ -183,6 +187,42 @@ void CubeMap::extractFaces(unsigned char **columns, int height, int width)
 	}
 }
 
+/**
+ * @param type
+ * @param format
+ * @param internalFormat
+ */
+void CubeMap::setupCubeMapTextures(GLenum type, GLenum format)
+{
+	glGenTextures(1, &iCubeTexId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, iCubeTexId);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	// Specify the 6 sides of the cube
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, iInternaFormat, imageSize, 
+		imageSize, 0, format, type, positiveX);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, iInternaFormat, imageSize, 
+		imageSize, 0, format, type, negativeX);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, iInternaFormat, imageSize,
+		imageSize, 0, format, type, positiveY);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, iInternaFormat, imageSize,
+		imageSize, 0, format, type, negativeY);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, iInternaFormat, imageSize,
+		imageSize, 0, format, type, positiveZ);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, iInternaFormat, imageSize,
+		imageSize, 0, format, type, negativeZ);
+
+	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP); 
+}
+
 void CubeMap::setupCompressedCubeMap(string filenamePrefix, 
 									 unsigned char& minExponent, unsigned char& maxExponent)
 {
@@ -213,32 +253,7 @@ void CubeMap::setupCompressedCubeMap(string filenamePrefix,
 	if (positiveX != NULL && positiveY != NULL && positiveZ != NULL &&
 		negativeX != NULL && negativeY != NULL && negativeZ != NULL)
 	{
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-		GLenum type = GL_UNSIGNED_BYTE;
-		
-		// Specify the 6 sides of the cube
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, imageSize, 
-			imageSize, 0, GL_RGBA, type, positiveX);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format, imageSize, 
-			imageSize, 0, GL_RGBA, type, negativeX);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, format, imageSize,
-			imageSize, 0, GL_RGBA, type, positiveY);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, format, imageSize,
-			imageSize, 0, GL_RGBA, type, negativeY);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, format, imageSize,
-			imageSize, 0, GL_RGBA, type, positiveZ);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, format, imageSize,
-			imageSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, negativeZ);
-
-		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-		glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP); 
+		setupCubeMapTextures(GL_UNSIGNED_BYTE, GL_RGBA);
 	}
 }
 
@@ -266,36 +281,6 @@ void CubeMap::setupCubeMap(string filenamePrefix)
 	if (positiveX != NULL && positiveY != NULL && positiveZ != NULL &&
 		negativeX != NULL && negativeY != NULL && negativeZ != NULL)
 	{
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-		// Specify the 6 sides of the cube
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, imageSize, 
-			imageSize, 0, GL_RGB, GL_FLOAT, positiveX);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format, imageSize, 
-			imageSize, 0, GL_RGB, GL_FLOAT, negativeX);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, format, imageSize,
-			imageSize, 0, GL_RGB, GL_FLOAT, positiveY);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, format, imageSize,
-			imageSize, 0, GL_RGB, GL_FLOAT, negativeY);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, format, imageSize,
-			imageSize, 0, GL_RGB, GL_FLOAT, positiveZ);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, format, imageSize,
-			imageSize, 0, GL_RGB, GL_FLOAT, negativeZ);
-
-		glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-		glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-		glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP); 
-		glEnable(GL_TEXTURE_GEN_S);
-		glEnable(GL_TEXTURE_GEN_T);
-		glEnable(GL_TEXTURE_GEN_R);
-
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-		glEnable(GL_TEXTURE_CUBE_MAP);   
-		glEnable(GL_AUTO_NORMAL);
+		setupCubeMapTextures(GL_FLOAT, GL_RGB);
 	}
 }
