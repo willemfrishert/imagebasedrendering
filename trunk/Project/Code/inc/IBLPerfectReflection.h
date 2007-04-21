@@ -12,7 +12,7 @@ public:
 	IBLPerfectReflection(const string& ashaderFilename, const string& aPanoramaFilename);
 	~IBLPerfectReflection(void);
 
-	void start();
+	void start(GLuint aCubeMapTexId);
 
 	void stop();
 
@@ -21,14 +21,10 @@ private:
 
 	void initShaders(const string& ashaderFilename);
 
-	void setupIrradianceMapTexture(const string& aPanoramaFilename);
-
 	// attributes
 private:
 	ShaderProgram* iShaderProgram;
 	ShaderObject* iFragmentShader;
 	ShaderObject* iVertexShader;
-	ShaderUniformValue<int>* iIrradianceMapUniform;
-
-	GLuint iIrradianceMapTexId;
+	ShaderUniformValue<int>* iCubeMapUniform;
 };
