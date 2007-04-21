@@ -97,6 +97,11 @@ float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float 
 	// Key of the Scene: the log2(log(Luminance)) is on purpose
 	float Log2LMin = Utility::log2(aMinLuminance);
 	float Log2LMax = Utility::log2(aMaxLuminance);
+
+#ifdef _DEBUG
+	assert(aLogLAverage >= 1e-8);
+#endif // _DEBUG
+
 	float f = (2 * Utility::log2(aLogLAverage) - Log2LMin - Log2LMax) / (Log2LMax - Log2LMin);
 	float key = 1.0f * pow(4.0f, f);
 
