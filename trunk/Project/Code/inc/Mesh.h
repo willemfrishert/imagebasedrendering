@@ -2,7 +2,6 @@
 
 #include "Basic.h"
 #include "Vertex.h"
-#include "ShaderAttributeObject.h"
 
 class Mesh;
 class ShaderAttributeObject;
@@ -37,13 +36,23 @@ public:
 	Vertex& geVertex(int aIndex = -1);
 	int getIndicesCount() const;
 	void getTriangleIndices(const GLuint* aTriangleIndices, GLuint* aVertexIndices) const;
+
+	void setTextured(bool aTextured);
     
   //PRIVATE VARIABLES
 private:
 	vector<Vertex> iVertices;
 	vector<GLuint> iIndices;
 	int iIndicesCount;
+
+	bool iTextured;
 };
+
+inline
+void Mesh::setTextured(bool aTextured)
+{
+	iTextured = aTextured;
+}
 
 /**
  * @param aVertex the vertex to be added
