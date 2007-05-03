@@ -15,6 +15,7 @@ PhotographicToneMapper::PhotographicToneMapper(GLuint aOriginalTexture, GLuint a
 , iWidth( aWidth )
 , iHeight( aHeight )
 , iPreviousExposure( 1.0 )
+, iBaseExposure( 1.0 )
 {
 	this->iLogAverageCalculator = new GPUParallelReductor(aWidth, aHeight, 
 		"./shader/logsumFP.frag", GL_RGBA_FLOAT32_ATI);
@@ -59,14 +60,31 @@ void PhotographicToneMapper::toneMap(GLuint aOriginalTexture, GLuint aLuminanceT
  */
 void PhotographicToneMapper::setExposure(float aValue)
 {
-	aValue = aValue > 1.0 ? 1.0 : aValue;
+	//aValue = aValue > 1.0 ? 1.0 : aValue;
 	aValue = aValue < 0.0 ? 1e-10 : aValue;
 	this->iExposureUniform->setValue( aValue );
+
+	printf("Exposure Set: %f\n", aValue);
 }
 
 /**
  * @return the value of the exposure
  */
+float PhotographicToneMapper::getLogAverage()
+{
+	return this->iLogAverageUniform->getValue();
+}
+
+void PhotographicToneMapper::setLogAverage(float aValue)
+{
+	//aValue = aValue < 0.0 ? 1e-10 : aValue;
+	this->iLogAverageUniform->setValue( aValue );
+	printf("Log Average Set: %f\n", aValue);
+}
+
+/**
+* @return the value of the exposure
+*/
 float PhotographicToneMapper::getExposure()
 {
 	return this->iExposureUniform->getValue();
@@ -105,27 +123,61 @@ float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float 
 	float f = (2 * Utility::log2(aLogLAverage) - Log2LMin - Log2LMax) / (Log2LMax - Log2LMin);
 	float key = 1.0f * pow(4.0f, f);
 
-	/*float correctExposure = log(aLogLAverage / key);*/
-	
-	float correctExposure = key;
-	Utility::clamp(correctExposure, 0.18f, correctExposure);
-	
-	float deltaExposure = correctExposure - iPreviousExposure;
+	static int frameCount = 0;
 
-	/*float ratio = exp(-abs(deltaExposure) * 100.0f);*/
-	
-	float ratio = 0.03;
-	
-	//std::cout << "ratio: " << ratio << "\t\tDELTA: " << deltaExposure << std::endl;
-	
-	float currentExposure = iPreviousExposure + deltaExposure * ratio;
+	//float correctExposure = key;
+	//Utility::clamp(correctExposure, 0.18f, correctExposure);
+	//
+	//float deltaExposure = correctExposure - iPreviousExposure;
+
+	//float ratio = 0.03;
+	//
+	////std::cout << "ratio: " << ratio << "\t\tDELTA: " << deltaExposure << std::endl;
+	//
+	//float currentExposure = iPreviousExposure + deltaExposure * ratio;
 
 	//printf("CORRECT: %f\t\CURRENT: %f\t\t NEW: %f\n", correctExposure, iPreviousExposure, currentExposure);
+	////printf("LOG AVERAGE: %f\t\t\ MAX: %f\t\t MIN: %f\n", aLogLAverage, aMaxLuminance, aMinLuminance);
+
+	//iPreviousExposure = currentExposure;
+
+
+
+
+	/*float correctExposure = key;*/
+	float correctExposure = 0.18f / aLogLAverage;
+	Utility::clamp(correctExposure, 0.01f, correctExposure);
+	correctExposure = log(correctExposure);
+
+	// store the correct as the base every 0.5 sec
+	if ( frameCount == 0 )
+	{
+		iBaseExposure = correctExposure;
+	}
+
+	iPreviousExposure = log(iPreviousExposure);
+
+	float deltaExposure = correctExposure - iPreviousExposure;
+
+	float ratio = 0.03;
+
+	//std::cout << "ratio: " << ratio << "\t\tDELTA: " << deltaExposure << std::endl;
+
+	float currentExposure = iPreviousExposure + deltaExposure * ratio;
+
+	printf("CORRECT: %f\t\CURRENT: %f\t\t NEW: %f\n", exp(correctExposure), exp(iPreviousExposure), exp(currentExposure));
 	//printf("LOG AVERAGE: %f\t\t\ MAX: %f\t\t MIN: %f\n", aLogLAverage, aMaxLuminance, aMinLuminance);
 
-	iPreviousExposure = currentExposure;
+	// compute the current exposure
+	float sensitivity = 1.0f;
+	iPreviousExposure = exp(iBaseExposure + (currentExposure - iBaseExposure) * sensitivity);
 
-	return currentExposure;
+	//iPreviousExposure = exp(currentExposure);
+
+	// update frameCount
+	frameCount = (frameCount + 1) % 16;
+
+	return iPreviousExposure;
 }
 
 void PhotographicToneMapper::enableMultitexturing( GLuint aOriginalTexture,  GLuint aLuminanceTexture )
