@@ -10,12 +10,21 @@ void main(void)
 	vec4 color = texture2D(originalTex, gl_TexCoord[0].st);
 	float Lw = texture2D(luminanceTex, gl_TexCoord[0].st).x;
 
-	float Lm = exposure * Lw / logAverage;
+	float Lm = exposure * Lw;
 	float Ld = Lm / (Lm + 1.0);
 	
 	color = decodeRGBE(color);
 
-	color.rgb = vec3(Ld, Ld, Ld) * color.rgb / Lw;
+	//color.rgb = color.rgb * Ld / Lw;
+
+	// WORKING
+	color.rgb *= exposure;
+	color.rgb = color.rgb / (color.rgb + vec3(1.0));
+
+	//color.rgb = pow(color.rgb, vec3(0.8));
+
+	logAverage * 1.0;
 
 	gl_FragColor = color;
+	//gl_FragColor = vec4(Ld, Ld, Ld, 1.0);
 }
