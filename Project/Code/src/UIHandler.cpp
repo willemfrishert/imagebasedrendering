@@ -6,6 +6,8 @@
 #include "Quaternion.h"
 #include "VirtualTrackball.h"
 #include "Renderer.h"
+#include "IMouseListener.h"
+#include "IKeyListener.h"
 #include "UIHandler.h"
 
 //CONSTANTS
@@ -23,7 +25,7 @@ UIHandler::UIHandler( Renderer* aRenderer )
 {
 	iRenderer = aRenderer;
 	UIHandler::iCurrentUi = this;
-	this->iRenderer->GetTrackball().SetResolution( 1.0 );
+	/*GetTrackball().SetResolution( 1.0 );*/
 }
 
 //Destructor
@@ -34,122 +36,124 @@ UIHandler::~UIHandler()
 //Used to handle the keyboard input (ASCII Characters)
 void UIHandler::ProcessNormalKeys(unsigned char key, int x, int y)
 {
-	float exposureIncrement = 0.06;
-	if (key == 't')
-	{
-	}
+	// Call all the listeners
+	list<IKeyListener*>::iterator it = iKeyListeners.begin();
+	list<IKeyListener*>::iterator end = iKeyListeners.end();
 
-	if (key == 'l')
+	for (; it != end; it++)
 	{
-	}
-
-	if (key == '+')
-	{
-		iRenderer->SetExposure( iRenderer->GetExposure() + exposureIncrement);
-	}
-
-	if (key == '-')
-	{
-		iRenderer->SetExposure( iRenderer->GetExposure() - exposureIncrement);
-	}
-
-	if (key == 'q')
-	{
-		exit( 0 );
-	}
+		(*it)->ProcessNormalKeys(key, x, y);
+	}	
 }
 
 // Used to handle the keyboard input (not ASCII Characters)
 void UIHandler::ProcessCursorKeys(int key, int x, int y)
 {
-	switch (key)
+	//switch (key)
+	//{
+	//	//MODIFY X
+	//case GLUT_KEY_UP:
+	//	break;
+	//case GLUT_KEY_DOWN:
+	//	break;
+	//	//MODIFY Y
+	//case GLUT_KEY_LEFT:
+	//	break;
+	//case GLUT_KEY_RIGHT:
+	//	break;
+	//	//MODIFY Z
+	//case GLUT_KEY_PAGE_UP:
+	//	break;
+	//case GLUT_KEY_PAGE_DOWN:
+	//	break;
+	//	//RESET Base angle as well
+	//case GLUT_KEY_HOME:
+	//	break;
+	//	//FREEZE
+	//default:
+	//	break;
+	//}
+	// Call all the listeners
+	list<IKeyListener*>::iterator it = iKeyListeners.begin();
+	list<IKeyListener*>::iterator end = iKeyListeners.end();
+
+	for (; it != end; it++)
 	{
-		//MODIFY X
-	case GLUT_KEY_UP:
-		break;
-	case GLUT_KEY_DOWN:
-		break;
-		//MODIFY Y
-	case GLUT_KEY_LEFT:
-		break;
-	case GLUT_KEY_RIGHT:
-		break;
-		//MODIFY Z
-	case GLUT_KEY_PAGE_UP:
-		break;
-	case GLUT_KEY_PAGE_DOWN:
-		break;
-		//RESET Base angle as well
-	case GLUT_KEY_HOME:
-		break;
-		//FREEZE
-	default:
-		break;
+		(*it)->ProcessCursorKeys(key, x, y);
 	}
 }
 
 void UIHandler::ProcessMouseEvent( int button, int state, int x, int y )
 {
-	iMouseY = y;
-	iMouseX = x;
+	// Call all the listeners
+	list<IMouseListener*>::iterator it = iMouseListeners.begin();
+	list<IMouseListener*>::iterator end = iMouseListeners.end();
 
-	switch (button)
+	for (; it != end; it++)
 	{
-		//Set point of rotation
-	case GLUT_LEFT_BUTTON:
-		if(GLUT_DOWN == state)
-		{
-			iMouseButtonDown = EMouseDownLeft;
-			this->iRenderer->SetOldXRotation( this->iRenderer->GetXRotation() );
-			this->iRenderer->SetOldYRotation( this->iRenderer->GetYRotation() );
-			this->iRenderer->GetTrackball().MouseDown(Vector3<float>(x, y, 0));
-		}
-		else
-		{
-			iMouseButtonDown = EMouseUp;
-			this->iRenderer->GetTrackball().MouseUp(Vector3<float>(x, y, 0));
-		}
-		break;
-		//Set mesh position
-	case GLUT_RIGHT_BUTTON:
-		if(GLUT_UP == state)
-		{
-			iMouseButtonDown = EMouseUp;
-		}
-		else
-		{
-			iMouseButtonDown = EMouseDownRight;
-		}
-		break;
-	default:
-		break;
+		(*it)->ProcessMouseEvent(button, state, x, y);
 	}
 
 }
 
 void UIHandler::ProcessMouseMotionEvent( int x, int y )
 {
-	if( EMouseDownLeft == iMouseButtonDown)
-	{
-		iRenderer->MouseMoved();
+	// Call all the listeners
+	list<IMouseListener*>::iterator it = iMouseListeners.begin();
+	list<IMouseListener*>::iterator end = iMouseListeners.end();
 
-		this->iRenderer->SetXRotation( this->iRenderer->GetOldXRotation() 
-			+ (float)(y - this->iMouseY) / 4.0);
-		this->iRenderer->SetYRotation( this->iRenderer->GetOldYRotation() 
-			+ (float)(x - this->iMouseX) / 4.0);
-		
-		this->iRenderer->GetTrackball().MouseMove(Vector3<float>(x, y, 0));
-	}
-	else if( EMouseDownRight == iMouseButtonDown)
+	for (; it != end; it++)
 	{
-		this->iRenderer->SetZoom(this->iRenderer->GetZoom()+(((float)y - (float)this->iMouseY) / this->iRenderer->GetScreenHeightInPixels()) * 20);
-		this->iMouseY = y;
+		(*it)->ProcessMouseMotionEvent(x, y);
+	}
+	
+}
+
+/**
+ * @param listener
+ */
+void UIHandler::AddMouseListener(IMouseListener* listener)
+{
+	list<IMouseListener*>::iterator begin = iMouseListeners.begin();
+	list<IMouseListener*>::iterator end = iMouseListeners.end();
+
+	// if not found
+	if( find(begin, end, listener) == end)
+	{
+		iMouseListeners.push_back( listener );
 	}
 }
 
+/**
+ * @param listener
+ */
+void UIHandler::RemoveMouseListener(IMouseListener* listener)
+{
+	iMouseListeners.remove( listener );
+}
 
+/**
+* @param listener
+*/
+void UIHandler::AddKeyListener(IKeyListener* listener)
+{
+	list<IKeyListener*>::iterator begin = iKeyListeners.begin();
+	list<IKeyListener*>::iterator end = iKeyListeners.end();
 
+	// if not found
+	if( find(begin, end, listener) == end)
+	{
+		iKeyListeners.push_back( listener );
+	}
+}
 
+/**
+* @param listener
+*/
+void UIHandler::RemoveKeyListener(IKeyListener* listener)
+{
+	iKeyListeners.remove( listener );
+}
 
 
 //EXTERNAL FUNCTIONS TO USE GLUT CALLBACKS
