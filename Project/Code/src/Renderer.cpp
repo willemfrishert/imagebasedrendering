@@ -11,8 +11,10 @@
 #include "LuminanceConverter.h"
 #include "GPUParallelReductor.h"
 #include "IBLPerfectReflection.h"
+#include "IBLRefraction.h"
 #include "Mesh.h"
 #include "OBJMeshLoader.h"
+#include "SShapedCurveToneMapper.h"
 #include "PhotographicToneMapper.h"
 
 
@@ -46,13 +48,14 @@ Renderer::Renderer()
 , iYRotation( 0 )
 , iOldXRotation( 0 )
 , iOldYRotation( 0 )
-, iXPosition( 0 )
-, iYPosition( 0 )
+, iMouseX( 0 )
+, iMouseY( 0 )
 , iZoom( -1 )
 {
 	InitMain();
 	Renderer::iCurrentRenderer = this;
 	iCubeMap = new CubeMap( 4 );
+	GetTrackball().SetResolution( 1.0 );
 }
 
 
@@ -66,6 +69,7 @@ Renderer::~Renderer()
 	delete iCubeMap;
 	delete iToneMapper;
 	delete iIBLReflection;
+	delete iIBLRefraction;
 
 	if (iDragon)
 	{
@@ -120,11 +124,10 @@ void Renderer::CreateScene()
 	this->iScreenCapture = new ScreenCapture(KTextureHeight, KTextureWidth);
 
 	this->iToneMapper = new PhotographicToneMapper(0, 0, KTextureWidth, KTextureHeight);
+	this->iSCurveToneMapper = new SShapedCurveToneMapper(0, 0, KTextureWidth, KTextureHeight);
 
-	//this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection", 
-	//	"./textures/stpeters_conv_phong_100.hdr");
-	this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection", 
-		"./textures/stpeters_panorama1024_3.hdr");
+	this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection");
+	this->iIBLRefraction = new IBLRefraction(1.5f, 1.0f, "./shader/iblrefraction");
 
 	pObj = gluNewQuadric();
 
@@ -137,7 +140,8 @@ void Renderer::CreateScene()
 
 void Renderer::createDragonDL() 
 {
-	iDragon = OBJLoader::loadModel("./3ds/2HeadedDragon50K.obj");
+	//iDragon = OBJLoader::loadModel("./3ds/2HeadedDragon50KSmooth.obj");
+	iDragon = OBJLoader::loadModel("./3ds/teapot.obj");
 
 	// Create the id for the list
 	iDragonDL = glGenLists(1);
@@ -178,27 +182,6 @@ void Renderer::FramesPerSec()
 		iFrame = 0;
 	}
 
-}
-
-/**
- * @param aValue
- */
-void Renderer::SetExposure(float aValue)
-{
-	this->iToneMapper->setExposure(aValue);
-}
-
-/**
- * @return 
- */
-float Renderer::GetExposure()
-{
-	return this->iToneMapper->getExposure();
-}
-
-void Renderer::MouseMoved()
-{
-	iToneMapper->InvalidateExposure();
 }
 
 /** \brief Method that draws text to the glut window
@@ -308,6 +291,7 @@ void Renderer::RenderScene()
 		glMultMatrixf( trackballMatrixGL );
 
 		iIBLReflection->start( iCubeMap->getCubeMapId() );
+		//iIBLRefraction->start( iCubeMap->getCubeMapId() );
 		{
 			//glBegin(GL_QUADS);
 			//	glTexCoord2i(0, 0);
@@ -324,17 +308,16 @@ void Renderer::RenderScene()
 			//glEnd();
 			//gluSphere(pObj, 0.5, 128, 128);
 			
-			//glCallList(iDragonDL);
-			
-			//iDragon->draw();
-			
-			gluSphere(pObj, 0.3, 128, 128);
+			glCallList(iDragonDL);
+			//gluSphere(pObj, 0.3, 128, 128);
+			//glutSolidTeapot(0.3);
 			
 			//glutSolidTeapot(0.25);
 			//glutSolidTorus(0.05, 0.25, 32 ,32);
 			//glutSolidSphere(0.5, 128, 128);
 		}
 		iIBLReflection->stop();
+		//iIBLRefraction->stop();
 		
 	}
 	glPopMatrix();
@@ -348,6 +331,7 @@ void Renderer::RenderScene()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	iToneMapper->toneMap(capturedSceneTexId, finalScene);
+	//iSCurveToneMapper->toneMap(capturedSceneTexId, finalScene);
 
 	//RenderSceneOnQuad(capturedSceneTexId, GL_TEXTURE_2D, 512, 512);
 
@@ -371,7 +355,6 @@ void Renderer::RenderSceneOnQuad(GLuint textureId, GLenum target,
 	{
 		glLoadIdentity();
 		gluOrtho2D( 0.0f, 1.0f, 0.0f, 1.0f);
-		//gluOrtho2D( 0.0f, width, 0.0f, height);
 
 		glMatrixMode( GL_MODELVIEW );
 		glPushMatrix();
@@ -392,18 +375,6 @@ void Renderer::RenderSceneOnQuad(GLuint textureId, GLenum target,
 				
 				glTexCoord2i(0, 1);
 				glVertex2f(0.0f, 1.0f);
-
-				//glTexCoord2i(0, 0);
-				//glVertex2f(0.0, 0.0);
-
-				//glTexCoord2i(width, 0);
-				//glVertex2f(width, 0.0);
-
-				//glTexCoord2i(width, height);
-				//glVertex2f(width, height);
-
-				//glTexCoord2i(0.0, height);
-				//glVertex2f(0.0, height);
 
 			}
 			glEnd();
@@ -458,26 +429,6 @@ float Renderer::GetOldYRotation()
 	return this->iOldYRotation;
 }
 
-void Renderer::SetXPosition(float aXPosition)
-{
-	this->iXPosition = aXPosition;
-}
-
-void Renderer::SetYPosition(float aYPosition)
-{
-	this->iYPosition = aYPosition;
-}
-
-float Renderer::GetXPosition()
-{
-	return this->iXPosition;
-}
-
-float Renderer::GetYPosition()
-{
-	return this->iYPosition;
-}
-
 void Renderer::SetZoom( float aZoom )
 {
 	if ( (aZoom > -33.0f ) && ( aZoom < -15.0f ) )
@@ -499,6 +450,82 @@ float Renderer::GetScreenHeightInPixels()
 VirtualTrackball& Renderer::GetTrackball()
 {
 	return this->trackball;
+}
+
+/**
+ * @param button
+ * @param state
+ * @param x
+ * @param y
+ */
+void Renderer::ProcessMouseEvent( int button, int state, int x, int y )
+{
+	iMouseY = y;
+	iMouseX = x;
+
+	//Set point of rotation
+	if (GLUT_LEFT_BUTTON == button)
+	{
+		if(GLUT_DOWN == state)
+		{
+			iMouseButtonDown = true;
+			SetOldXRotation( GetXRotation() );
+			SetOldYRotation( GetYRotation() );
+			GetTrackball().MouseDown(Vector3<float>(x, y, 0));
+		}
+		else
+		{
+			iMouseButtonDown = false;
+			GetTrackball().MouseUp(Vector3<float>(x, y, 0));
+		}
+	}
+}
+
+void Renderer::ProcessMouseMotionEvent( int x, int y )
+{
+	if( iMouseButtonDown )
+	{
+		SetXRotation( GetOldXRotation() 
+			+ (float)(y - iMouseY) / 4.0);
+		SetYRotation( GetOldYRotation() 
+			+ (float)(x - iMouseX) / 4.0);
+
+		GetTrackball().MouseMove(Vector3<float>(x, y, 0));
+	}
+	//else if( EMouseDownRight == iMouseButtonDown)
+	//{
+	//	this->iRenderer->SetZoom(this->iRenderer->GetZoom()+(((float)y - (float)this->iMouseY) / this->iRenderer->GetScreenHeightInPixels()) * 20);
+	//	this->iMouseY = y;
+	//}
+}
+
+void Renderer::ProcessCursorKeys(int key, int x, int y )
+{
+}
+
+void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
+{
+	static float exposureIncrement = 0.02f;
+
+	switch( key )
+	{
+	case '+':
+		iToneMapper->setExposure( iToneMapper->getExposure() + exposureIncrement);
+		break;
+	case '-':
+		iToneMapper->setExposure( iToneMapper->getExposure() - exposureIncrement);
+		break;
+	case 'L':
+		iToneMapper->setLogAverage( iToneMapper->getLogAverage() + exposureIncrement);
+	    break;
+	case 'l':
+		iToneMapper->setLogAverage( iToneMapper->getLogAverage() - exposureIncrement);
+	    break;
+	case 'q':
+	default:
+		exit( 0 );
+	    break;
+	}
 }
 
 //-----------------------------
