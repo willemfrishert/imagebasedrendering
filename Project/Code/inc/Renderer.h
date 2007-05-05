@@ -9,7 +9,8 @@
 #include "ShaderUniformObject.h"
 #include "ShaderUniformValue.h"
 #include "ShaderUniformVector.h"
-#include "glm_avl.h"
+#include "IMouseListener.h"
+#include "IKeyListener.h"
 
 
 class VirtualTrackball;
@@ -18,7 +19,9 @@ class FrameBufferObject;
 class ScreenCapture;
 class LuminanceConverter;
 class PhotographicToneMapper;
+class SShapedCurveToneMapper;
 class IBLPerfectReflection;
+class IBLRefraction;
 class Mesh;
 
 //CONSTANTS:
@@ -31,7 +34,7 @@ const int KNumberOfShaderPrograms = 3;
 *
 * This class contains all the functions necessary for rendering.
 */
-class Renderer
+class Renderer: public IMouseListener, public IKeyListener
 {
 	//PUBLIC FUNCTIONS
 	//------------------
@@ -89,34 +92,26 @@ public:
 	///Gets the Trackball's Y rotation
 	float GetOldYRotation();
 
-	///Sets the Trackball's X position
-	void SetXPosition(float aXPosition);
-
-	///Sets the Trackball's Y position
-	void SetYPosition(float aYPosition);
-
-	///Gets the Trackball's X position
-	float GetXPosition();
-
-	///Gets the Trackball's Y position
-	float GetYPosition();
-
 	void SetZoom(float aZoom);
 	float GetZoom();
 
 	float GetScreenHeightInPixels();
 
-	void MouseMoved();
+	// Mouse handling functions
+	virtual void ProcessMouseMotionEvent( int x, int y );
+	virtual void ProcessMouseEvent( int button, int state, int x, int y );
+
+	// Key handling events
+	virtual void ProcessNormalKeys( unsigned char key, int x, int y );
+	virtual void ProcessCursorKeys( int key, int x, int y );
+
 
 	//GETTERS
 	//---------------------------------------
 	VirtualTrackball& GetTrackball();
 
-	float GetExposure();
-
 	//SETTERS
 	//---------------------------------------
-	void SetExposure(float aValue);
 
 	//PRIVATE FUNCTIONS
 	//------------------
@@ -179,17 +174,22 @@ private:
 	float iYRotation;
 	float iOldXRotation;
 	float iOldYRotation;
-	float iXPosition;
-	float iYPosition;
 	float iZoom;
 	float iScreenHeight;
+	bool iMouseButtonDown;
+	int iMouseX;
+	int iMouseY;
+
+
 
 	CubeMap* iCubeMap;
 
 	ScreenCapture* iScreenCapture;
 	LuminanceConverter* iLuminanceConverter;
 	PhotographicToneMapper* iToneMapper;
+	SShapedCurveToneMapper* iSCurveToneMapper;
 	IBLPerfectReflection* iIBLReflection;
+	IBLRefraction* iIBLRefraction;
 
 	VirtualTrackball trackball;
 
