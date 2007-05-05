@@ -19,7 +19,9 @@ public:
 
 	float getExposure();
 
-	void InvalidateExposure();
+	void setLogAverage(float aValue);
+
+	float getLogAverage();
 
 	// methods
 private:
@@ -57,4 +59,5 @@ private:
 	
 	// Exposure settings
 	float iPreviousExposure;
+	float iBaseExposure;
 };
