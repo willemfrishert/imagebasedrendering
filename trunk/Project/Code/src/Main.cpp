@@ -1,19 +1,24 @@
+#include "CubeMap.h"
+#include "Vector3.h"
+#include "Matrix4.h"
+#include "Quaternion.h"
+#include "VirtualTrackball.h"
 #include "Renderer.h"
 #include "UIHandler.h"
-#include "hdrloader.h"
+
+#include "GPUParallelReductor.h"
+
+#include <math.h>
 
 //CONSTANTS
 const int KWindowPositionX = 50;
 const int KWindowPositionY = 50;
-const int KWindowWidth = 800;
-const int KWindowHeight = 600;
+const int KWindowWidth = 512;
+const int KWindowHeight = 512;
 
 
 void initContext(int argc, char **argv)
 {
-	HDRLoaderResult hdrPic;
-	HDRLoader::load("./textures/beach_cross.hdr", hdrPic);
-
 	glutInit( &argc, argv );
 	
 	//Init Window
@@ -31,13 +36,36 @@ void initContext(int argc, char **argv)
 	glutDisplayFunc(  RenderSceneWithRenderer );
 	//glutIdleFunc(     RenderSceneWithRenderer );
 	glutReshapeFunc(  ResizeSceneWithRenderer );
-	glutTimerFunc(20, RenderSceneWithRendererTimerFunc, 20);
+	glutTimerFunc(30, RenderSceneWithRendererTimerFunc, 30);
 
 #ifdef _WIN32
 	GLenum err = glewInit();
 #endif	
 }
 
+void testGPU()
+{
+	const int side = 512;
+	//float f[side*side];
+	float* f = new float[side*side];
+	for (int i = 0; i < side*side; i++)
+	{
+		f[i] = 1;
+		//f[i] = (i % 2) + 1;
+		//f[i] = i % 2 ? 0.25f : 0.5f;
+	}
+
+	//f[side] = 1056;
+	//f[side] = 0.75f;
+	//f[side*2] = 0.6f;
+	//f[side*2+side/2] = 0.3333f;
+	//f[side*side - side/2] = 0.8f;
+
+	GPUParallelReductor proc(f, side, side, "./shader/logSumFP.frag");
+	GLfloat result[4];
+	proc.processData(result);
+	delete f;
+}
 
 /**
 * Main method.
@@ -51,13 +79,18 @@ void initContext(int argc, char **argv)
 * @return 0
 */
 int main(int argc, char **argv)
-{
+{	
 	//Initialize GL using GLUT functions
 	initContext(argc, argv);
 
+	//testGPU();
+
+
 	//Init renderer
 	Renderer* renderer = new Renderer();
-	UIHandler* ui = new UIHandler( renderer );
+	UIHandler* ui = new UIHandler( NULL );
+	ui->AddMouseListener( renderer );
+	ui->AddKeyListener( renderer );
 
 	renderer->CreateScene();
 
