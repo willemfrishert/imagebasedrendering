@@ -35,15 +35,15 @@ PhotographicToneMapper::~PhotographicToneMapper(void)
 void PhotographicToneMapper::toneMap(GLuint aOriginalTexture, GLuint aLuminanceTexture)
 {
 	// Compute Log information: LOG AVERAGE, LOG MIN and LOG MAX 
-	float logSum[4];
-	iLogAverageCalculator->processData(aLuminanceTexture, logSum);
-	float logAverage = exp( (logSum[0] / (float)(iHeight * iWidth)));
+	float logStatistics[4];
+	iLogAverageCalculator->processData(aLuminanceTexture, logStatistics);
+	float logAverage = exp( (logStatistics[0] / (float)(iHeight * iWidth)));
 	
 	//printf("Key: %f\t\tLogAverage: %f\t\tPre-Exposure: %f\n", key, logAverage, correctExposure);
 	//printf("Lavg: %f\t\tScale: %f\n", logAverage, scale);
 	//printf("CORRECT: %f\t\CURRENT: %f\t\t NEW: %f\n", correctExposure, iPreviousExposure, newExposure);
 
-	float currentExposure = computeCurrentExposure(logAverage, logSum[3], logSum[2]);
+	float currentExposure = computeCurrentExposure(logAverage, logStatistics[3], logStatistics[2]);
 
 	iLogAverageUniform->setValue( logAverage );
 	iExposureUniform->setValue( currentExposure );
@@ -91,15 +91,6 @@ float PhotographicToneMapper::getExposure()
 }
 
 
-/**
- * @description invalidates the exposure so the next
- * frame exposure will be set as the default.
- */
-void PhotographicToneMapper::InvalidateExposure()
-{
-	//this->iInvalidateExposure = true;
-}
-
 /************************************************************************/
 /* ****************** PRIVATE METHODS **************                    */
 /************************************************************************/
@@ -121,33 +112,12 @@ float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float 
 #endif // _DEBUG
 
 	float f = (2 * Utility::log2(aLogLAverage) - Log2LMin - Log2LMax) / (Log2LMax - Log2LMin);
-	float key = 1.0f * pow(4.0f, f);
+	float key = 1.2f * pow(4.0f, f);
 
 	static int frameCount = 0;
 
-	//float correctExposure = key;
-	//Utility::clamp(correctExposure, 0.18f, correctExposure);
-	//
-	//float deltaExposure = correctExposure - iPreviousExposure;
-
-	//float ratio = 0.03;
-	//
-	////std::cout << "ratio: " << ratio << "\t\tDELTA: " << deltaExposure << std::endl;
-	//
-	//float currentExposure = iPreviousExposure + deltaExposure * ratio;
-
-	//printf("CORRECT: %f\t\CURRENT: %f\t\t NEW: %f\n", correctExposure, iPreviousExposure, currentExposure);
-	////printf("LOG AVERAGE: %f\t\t\ MAX: %f\t\t MIN: %f\n", aLogLAverage, aMaxLuminance, aMinLuminance);
-
-	//iPreviousExposure = currentExposure;
-
-
-
-
-	/*float correctExposure = key;*/
-	float correctExposure = 0.18f / aLogLAverage;
-	Utility::clamp(correctExposure, 0.01f, correctExposure);
-	correctExposure = log(correctExposure);
+	float correctExposure = key / aLogLAverage;
+	Utility::clamp(correctExposure, 0.1f, correctExposure);
 
 	// store the correct as the base every 0.5 sec
 	if ( frameCount == 0 )
@@ -155,27 +125,20 @@ float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float 
 		iBaseExposure = correctExposure;
 	}
 
-	iPreviousExposure = log(iPreviousExposure);
-
-	float deltaExposure = correctExposure - iPreviousExposure;
-
-	float ratio = 0.03;
+	float deltaExposure = (correctExposure + iBaseExposure) / 2.0f - iPreviousExposure;
+	float ratio = 0.1f;
 
 	//std::cout << "ratio: " << ratio << "\t\tDELTA: " << deltaExposure << std::endl;
 
 	float currentExposure = iPreviousExposure + deltaExposure * ratio;
 
-	printf("CORRECT: %f\t\CURRENT: %f\t\t NEW: %f\n", exp(correctExposure), exp(iPreviousExposure), exp(currentExposure));
-	//printf("LOG AVERAGE: %f\t\t\ MAX: %f\t\t MIN: %f\n", aLogLAverage, aMaxLuminance, aMinLuminance);
+	//printf("CORRECT: %f\t\CURRENT: %f\t\t NEW: %f\n", correctExposure, iPreviousExposure, currentExposure);
+	//printf("LOG AVERAGE: %f\t MAX: %f\t MIN: %f \tKEY: %f\n", aLogLAverage, aMaxLuminance, aMinLuminance, key);
 
-	// compute the current exposure
-	float sensitivity = 1.0f;
-	iPreviousExposure = exp(iBaseExposure + (currentExposure - iBaseExposure) * sensitivity);
-
-	//iPreviousExposure = exp(currentExposure);
+	iPreviousExposure = currentExposure;
 
 	// update frameCount
-	frameCount = (frameCount + 1) % 16;
+	frameCount = (frameCount + 1) % 15;
 
 	return iPreviousExposure;
 }
