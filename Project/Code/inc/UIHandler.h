@@ -6,6 +6,8 @@
 //CLASS DECLARATION
 
 class Renderer;
+class IMouseListener;
+class IKeyListener;
 
 /** \brief User interface class.
 *
@@ -28,6 +30,12 @@ public:
 	void ProcessMouseEvent( int button, int state, int x, int y );
 	void ProcessMouseMotionEvent( int x, int y );
 
+	void AddMouseListener(IMouseListener* listener);
+	void RemoveMouseListener(IMouseListener* listener);
+
+	void AddKeyListener(IKeyListener* listener);
+	void RemoveKeyListener(IKeyListener* listener);
+
 	//PUBLIC DATA
 public:
 	static UIHandler* iCurrentUi;
@@ -43,8 +51,9 @@ private:
 
 	Renderer* iRenderer;
 	TMouseDownStatus iMouseButtonDown;
-	int iMouseX;
-	int iMouseY;	
+
+	list< IMouseListener* > iMouseListeners;
+	list< IKeyListener* > iKeyListeners;
 };
 
 extern void ProcessNormalKeysWithUi( unsigned char key, int x, int y );
