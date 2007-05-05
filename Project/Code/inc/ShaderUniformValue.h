@@ -14,6 +14,7 @@ class ShaderUniformValue: public ShaderUniformObject
 {
 public:
 	ShaderUniformValue(void);
+	ShaderUniformValue(char* name, T value);
 	virtual ~ShaderUniformValue(void);
 
 	void setValue(T value);
@@ -32,6 +33,12 @@ private:
 template <class T>
 ShaderUniformValue<T>::ShaderUniformValue(void)
 {
+}
+
+template <class T>
+ShaderUniformValue<T>::ShaderUniformValue(char* name, T value)
+{
+	this->set(name, value);
 }
 
 template <class T>
