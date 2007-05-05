@@ -8,15 +8,18 @@
 
 #include "hdrloader.h"
 
-IBLPerfectReflection::IBLPerfectReflection(const string& ashaderFilename, const string& aPanoramaFilename)
+IBLPerfectReflection::IBLPerfectReflection(const string& ashaderFilename)
 {
-	//setupIrradianceMapTexture( aPanoramaFilename );
-
 	initShaders( ashaderFilename );
 }
 
 IBLPerfectReflection::~IBLPerfectReflection(void)
 {
+	delete iShaderProgram;
+	delete iCubeMapUniform;
+
+	delete iFragmentShader;
+	delete iVertexShader;
 }
 
 /**
@@ -46,14 +49,10 @@ void IBLPerfectReflection::stop()
 void IBLPerfectReflection::initShaders(const string& ashaderFilename)
 {
 	iShaderProgram			= new ShaderProgram();
-	iCubeMapUniform	= new ShaderUniformValue<int>();
+	iCubeMapUniform			= new ShaderUniformValue<int>("reflectionCubeMap", 0);
 
 	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, ashaderFilename + ".frag");
 	iVertexShader			= new ShaderObject(GL_VERTEX_SHADER, ashaderFilename + ".vert");
-
-	// Uniforms
-	iCubeMapUniform->setValue( 0 );
-	iCubeMapUniform->setName("reflectionCubeMap");
 
 	iShaderProgram->attachShader( *iFragmentShader );
 	iShaderProgram->attachShader( *iVertexShader );
