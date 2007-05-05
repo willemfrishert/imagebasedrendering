@@ -11,16 +11,16 @@ varying vec3 V;
 
 void main(void)
 {
-	vec2 texCoord;
+	//vec2 texCoord;
 
 	//vec3 normR = normalize(R);
 	vec3 normR = normalize( reflect(V, N) );
 
 	//float Ks = pow(dot(-V, N), 50.0);
 
-	// Map the vector's cartesian coordinates to UV coordinates
-	texCoord.s = 0.5 * (1.0 + 0.3183098862 * atan(normR.x, -normR.z));
-	texCoord.t = 0.3183098862 * acos(normR.y);
+	//// Map the vector's cartesian coordinates to UV coordinates
+	//texCoord.s = 0.5 * (1.0 + 0.3183098862 * atan(normR.x, -normR.z));
+	//texCoord.t = 0.3183098862 * acos(normR.y);
 
 	//vec4 reflectionColor = decodeRGBE( texture2D(irradianceMap, texCoord) );
   
