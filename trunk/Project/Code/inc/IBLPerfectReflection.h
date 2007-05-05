@@ -9,7 +9,7 @@ class ShaderUniformValue;
 class IBLPerfectReflection
 {
 public:
-	IBLPerfectReflection(const string& ashaderFilename, const string& aPanoramaFilename);
+	IBLPerfectReflection(const string& ashaderFilename);
 	~IBLPerfectReflection(void);
 
 	void start(GLuint aCubeMapTexId);
