@@ -21,7 +21,7 @@ void main(void)
 	color.rgb *= exposure;
 	color.rgb = color.rgb / (color.rgb + vec3(1.0));
 
-	//color.rgb = pow(color.rgb, vec3(0.8));
+	//color.rgb = pow(color.rgb, vec3(0.5));
 
 	logAverage * 1.0;
 
