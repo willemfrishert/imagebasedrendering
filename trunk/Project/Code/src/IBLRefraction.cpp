@@ -48,10 +48,13 @@ void IBLRefraction::stop()
  */
 void IBLRefraction::initShaders(const string& ashaderFilename)
 {
+	float eta				= min(iEta2, iEta1) / max(iEta2, iEta1);
+	float f					= ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
 	iShaderProgram			= new ShaderProgram();
 	iCubeMapUniform			= new ShaderUniformValue<int>("reflectionCubeMap", 0);
-	iEta1Uniform			= new ShaderUniformValue<float>("eta1", 1.5f);
-	iEta2Uniform			= new ShaderUniformValue<float>("eta2", 1.0f);
+	iEtaUniform				= new ShaderUniformValue<float>("eta", eta);
+	iFUniform				= new ShaderUniformValue<float>("f", f);
+	iFresnelPowerUniform	= new ShaderUniformValue<float>("fresnelPower", 15.0);
 
 	iFragmentShader			= new ShaderObject(GL_FRAGMENT_SHADER, ashaderFilename + ".frag");
 	iVertexShader			= new ShaderObject(GL_VERTEX_SHADER, ashaderFilename + ".vert");
@@ -60,8 +63,9 @@ void IBLRefraction::initShaders(const string& ashaderFilename)
 	iShaderProgram->attachShader( *iVertexShader );
 	iShaderProgram->attachShader( *CodecRGBE::getShaderObject() );
 	iShaderProgram->addUniformObject( iCubeMapUniform );
-	iShaderProgram->addUniformObject( iEta1Uniform );
-	iShaderProgram->addUniformObject( iEta2Uniform );
+	iShaderProgram->addUniformObject( iEtaUniform );
+	iShaderProgram->addUniformObject( iFresnelPowerUniform );
+	iShaderProgram->addUniformObject( iFUniform );
 
 	// after all the shaders have been attached
 	iShaderProgram->buildProgram();
