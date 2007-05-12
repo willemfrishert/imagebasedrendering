@@ -1,9 +1,10 @@
 varying vec3 refraction;
 varying vec3 reflection;
-varying float reflectance;
-varying float transmittance;
-uniform float eta1;
-uniform float eta2;
+uniform float eta;
+uniform float f;
+uniform float fresnelPower;
+
+varying float ratio;
 
 void fresnelRefraction(in vec3 incom, in vec3 normal, in float externalEta, 
 			   in float internalEta, out vec3 reflection, 
@@ -18,31 +19,13 @@ void main(void)
 	V = normalize(V);
 	N = normalize(N);
 
-	//R = refract(V, N, 1.0/1.5);
-	vec3 reflect;
-	fresnelRefraction(V, N, eta1, eta2, reflection, refraction, reflectance, transmittance);
+	// Compute the ratio created by Christophe Schlick
+	float cosTheta = dot(-V, N);
+	ratio = f + (1.0 - f) * pow(1.0 - cosTheta, fresnelPower);
+
+	// get the two vectors: reflection and refraction
+	refraction = refract(V, N, eta);
+	reflection = reflect(V, N);
 
 	gl_Position = ftransform();
-}
-
-void fresnelRefraction(in vec3 V, in vec3 N, in float externalEta, 
-			   in float internalEta, out vec3 reflection, 
-			   out vec3 refraction, out float reflectance, 
-			   out float transmittance)
-{ 
-	float eta = externalEta/internalEta; 
-	float cosTheta1 = dot(V, N); 
-	float cosTheta2 = sqrt(1.0 - ((eta * eta) * ( 1.0 - (cosTheta1 * cosTheta1)))); 
-	
-	reflection = V - 2.0 * cosTheta1 * N; 
-	refraction = (eta * V) + (cosTheta2 - eta * cosTheta1) * N; 
-	
-	float Rs = (externalEta * cosTheta1 - internalEta * cosTheta2 ) / 
-		(externalEta * cosTheta1 + internalEta * cosTheta2); 
-	
-	float Rp = (internalEta * cosTheta1 - externalEta * cosTheta2 ) / 
-		(internalEta * cosTheta1 + externalEta * cosTheta2); 
-	
-	reflectance = (Rs * Rs + Rp * Rp) / 2.0; 
-	transmittance =((1.0-Rs) * (1.0-Rs) + (1.0-Rp) * (1.0-Rp)) / 2.0; 
 }

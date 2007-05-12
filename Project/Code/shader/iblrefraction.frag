@@ -1,22 +1,20 @@
 uniform samplerCube reflectionCubeMap;
 varying vec3 refraction;
 varying vec3 reflection;
-varying float reflectance;
-varying float transmittance;
+
+varying float ratio;
 
 vec4 decodeRGBE(vec4 color);
 vec4 encodeRGBE(vec4 color);
 
 void main(void)
 {
-	vec4 refractColor = decodeRGBE( textureCube(reflectionCubeMap, refraction) );
-	vec4 reflectColor = decodeRGBE( textureCube(reflectionCubeMap, reflection) );
+	vec3 refractColor = decodeRGBE( textureCube(reflectionCubeMap, refraction) ).rgb;
+	vec3 reflectColor = decodeRGBE( textureCube(reflectionCubeMap, reflection) ).rgb;
 	
-	float fresnelT = transmittance * 0.5;	
-	float fresnelR = reflectance * 0.5;	
+	vec3 color = mix(refractColor, reflectColor, ratio);
 
-	gl_FragColor = encodeRGBE( reflectColor + refractColor);
+	color = max(color, vec3(1e-4));
 
-	
-//	gl_FragColor = color;
+	gl_FragColor = encodeRGBE( vec4(color, 1.0) );
 }
