@@ -26,8 +26,9 @@ private:
 	ShaderObject* iFragmentShader;
 	ShaderObject* iVertexShader;
 	ShaderUniformValue<int>* iCubeMapUniform;
-	ShaderUniformValue<float>* iEta1Uniform;
-	ShaderUniformValue<float>* iEta2Uniform;
+	ShaderUniformValue<float>* iEtaUniform;
+	ShaderUniformValue<float>* iFresnelPowerUniform;
+	ShaderUniformValue<float>* iFUniform;
 
 	float iEta1;
 	float iEta2;
