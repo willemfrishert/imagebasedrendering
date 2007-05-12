@@ -5,6 +5,7 @@
 #include "ShaderUniformValue.h"
 #include "ShaderProgram.h"
 #include "ScreenCapture.h"
+#include "CodecRGBE.h"
 
 static GLenum screenCaptureTexTarget = GL_TEXTURE_2D;
 
@@ -31,6 +32,7 @@ ScreenCapture::ScreenCapture(int width, int height)
 	iInputTextureUniform->setName("cubeMap");
 
 	iShaderProgram->attachShader( *iFragmentShader );
+	iShaderProgram->attachShader( *CodecRGBE::getShaderObject() );
 	iShaderProgram->addUniformObject( iInputTextureUniform );
 
 	// after all the shaders have been attached
@@ -95,8 +97,8 @@ void ScreenCapture::setupTexture(GLuint textureId, const GLvoid* data, int width
 	// from [0, height] x [0, width]
 	glBindTexture(screenCaptureTexTarget, textureId);
 
-	glTexParameteri(screenCaptureTexTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(screenCaptureTexTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(screenCaptureTexTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(screenCaptureTexTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// NOTE: as opposed to what they say in the extension description of 
 	// GL_TEXTURE_RECTANGLE_ARB, ATI seems to not support 
