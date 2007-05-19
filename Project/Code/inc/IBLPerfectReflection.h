@@ -1,18 +1,20 @@
 #pragma once
 
+#include "Material.h"
+
 class ShaderObject;
 class ShaderProgram;
 template <class T>
 class ShaderUniformValue;
 
 
-class IBLPerfectReflection
+class IBLPerfectReflection : public Material
 {
 public:
-	IBLPerfectReflection(const string& ashaderFilename);
+	IBLPerfectReflection( const string& ashaderFilename, GLuint aCubeMapTexId );
 	~IBLPerfectReflection(void);
 
-	void start(GLuint aCubeMapTexId);
+	void start();
 
 	void stop();
 
@@ -27,4 +29,5 @@ private:
 	ShaderObject* iFragmentShader;
 	ShaderObject* iVertexShader;
 	ShaderUniformValue<int>* iCubeMapUniform;
+	GLuint iCubeMapTexId;
 };
