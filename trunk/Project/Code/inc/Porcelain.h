@@ -7,11 +7,12 @@ class ShaderProgram;
 template <class T>
 class ShaderUniformValue;
 
-class IBLRefraction : public Material
+
+class Porcelain : public Material
 {
 public:
-	IBLRefraction(float aEta1, float aEta2, const string& ashaderFilename, GLuint aCubeMapTexId);
-	~IBLRefraction(void);
+	Porcelain(float aEta1, float aEta2,const string& ashaderFilename, GLuint aCubeMapTexId, GLuint aDiffuseCubeMapTexId);
+	~Porcelain(void);
 
 	void start();
 
@@ -28,12 +29,13 @@ private:
 	ShaderObject* iFragmentShader;
 	ShaderObject* iVertexShader;
 	ShaderUniformValue<int>* iCubeMapUniform;
-	ShaderUniformValue<float>* iEtaUniform;
-	ShaderUniformValue<float>* iFresnelPowerUniform;
-	ShaderUniformValue<float>* iFUniform;
+	ShaderUniformValue<int>* iDiffuseCubeMapUniform;
+	ShaderUniformValue<float>* iMaterialReflectance;
+	ShaderUniformValue<float>* iFresnelPower;
 
 	float iEta1;
 	float iEta2;
 
 	GLuint iCubeMapTexId;
+	GLuint iDiffuseCubeMapTexId;
 };
