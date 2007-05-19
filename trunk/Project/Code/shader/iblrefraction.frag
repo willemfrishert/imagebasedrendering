@@ -12,6 +12,7 @@ void main(void)
 	vec3 refractColor = decodeRGBE( textureCube(reflectionCubeMap, refraction) ).rgb;
 	vec3 reflectColor = decodeRGBE( textureCube(reflectionCubeMap, reflection) ).rgb;
 	
+	// ratio is the reflection coefficient
 	vec3 color = mix(refractColor, reflectColor, ratio);
 
 	color = max(color, vec3(1e-4));
