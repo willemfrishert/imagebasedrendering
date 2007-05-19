@@ -6,9 +6,10 @@
 #include "CodecRGBE.h"
 #include "IBLRefraction.h"
 
-IBLRefraction::IBLRefraction(float aEta1, float aEta2, const string& ashaderFilename)
+IBLRefraction::IBLRefraction(float aEta1, float aEta2, const string& ashaderFilename, GLuint aCubeMapTexId)
 : iEta1( aEta1 )
 , iEta2( aEta2 )
+, iCubeMapTexId( aCubeMapTexId )
 {
 	initShaders( ashaderFilename );
 }
@@ -25,10 +26,10 @@ IBLRefraction::~IBLRefraction(void)
 /**
 *
 */
-void IBLRefraction::start(GLuint aCubeMapTexId)
+void IBLRefraction::start()
 {
 	glEnable(GL_TEXTURE_CUBE_MAP);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, aCubeMapTexId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, iCubeMapTexId);
 
 	iShaderProgram->useProgram();
 }
