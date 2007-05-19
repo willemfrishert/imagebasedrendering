@@ -6,11 +6,6 @@ uniform float fresnelPower;
 
 varying float ratio;
 
-void fresnelRefraction(in vec3 incom, in vec3 normal, in float externalEta, 
-			   in float internalEta, out vec3 reflection, 
-			   out vec3 refraction, out float reflectance, 
-			   out float transmittance);
-
 void main(void)
 {
 	vec3 N = normalize(gl_Normal);
