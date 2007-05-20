@@ -11,6 +11,7 @@
 #include "ShaderUniformVector.h"
 #include "IMouseListener.h"
 #include "IKeyListener.h"
+#include "GLMenu.h"
 
 
 class VirtualTrackball;
@@ -176,11 +177,14 @@ private:
 	float iOldYRotation;
 	float iZoom;
 	float iScreenHeight;
-	bool iMouseButtonDown;
+	int iMouseButtonDown;
 	int iMouseX;
 	int iMouseY;
+	int iZoomMouseY;
 
-
+	// Menu
+	GLMenu* iMenu;
+	bool iShowMenu;
 
 	CubeMap* iCubeMap;
 
