@@ -16,28 +16,24 @@ void main(void)
 	float dummie = logAverage * exposure;
 	/**** ***/
 
-	float lumPow = pow(luminance, sensitivity);
-	float sigmaN = pow(exposure, sensitivity);
-	float Ld = lumPow / (lumPow + sigmaN);
+	//float lumPow = pow(luminance, sensitivity);
+	//float sigmaN = pow(0.4, sensitivity);
+	//float Ld = Lw / (Lw + sigmaN);
 	
 	color = decodeRGBE(color);
 	
-	//float sigmaN = pow(exposure, sensitivity);
-	//float rN = pow(color.r, sensitivity);
-	//float gN = pow(color.g, sensitivity);
-	//float bN = pow(color.b, sensitivity);
-	//
-	//color.r = rN / (rN + sigmaN);
-	//color.g = gN / (gN + sigmaN);
-	//color.b = bN / (bN + sigmaN);
+	float sigmaN = pow(exposure, sensitivity);
+	float rN = pow(color.r, sensitivity);
+	float gN = pow(color.g, sensitivity);
+	float bN = pow(color.b, sensitivity);
+	
+	color.r = rN / (rN + sigmaN);
+	color.g = gN / (gN + sigmaN);
+	color.b = bN / (bN + sigmaN);
 
-	// power the quocient to a saturation constant s
-	vec3 saturation = pow(color.rgb/luminance, vec3(0.8));
-	color.rgb = vec3(Ld, Ld, Ld) * saturation;
-
-	//color.r = rN;
-	//color.g = gN;
-	//color.b = bN;
+	//// power the quocient to a saturation constant s
+	//vec3 saturation = pow(color.rgb/luminance, vec3(1.0));
+	//color.rgb = vec3(Ld, Ld, Ld) * color.rgb/Lw;
 
 	gl_FragColor = color;
 }
