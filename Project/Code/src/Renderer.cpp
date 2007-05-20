@@ -126,7 +126,7 @@ void Renderer::CreateScene()
 {
 	unsigned char minExponent;
 	unsigned char maxExponent;
-	iCubeMap->setupCompressedCubeMap("./textures/stpeters512", minExponent, maxExponent);
+	iCubeMap->setupCompressedCubeMap("./textures/stpeters/stpeters512", minExponent, maxExponent);
 	/*iCubeMap->setupCompressedCubeMap("./textures/tappanYard/tappanYard", minExponent, maxExponent);*/
 	//iCubeMap->setupCompressedCubeMap("./textures/pisa/pisa", minExponent, maxExponent);
 
