@@ -23,7 +23,7 @@ static const string suffixes[] = {
 	SUFFIX_NEGZ
 };
 
-static const float cubeSide = 10.0f;
+static const float cubeSide = 7.0f;
 
 static float vertices[8][3] = {
 
@@ -87,10 +87,10 @@ void CubeMap::render( float* inverseTransMatrix )
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, iCubeTexId);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix(); // Modelview
-	{
-		glLoadIdentity();
+	//glMatrixMode(GL_MODELVIEW);
+	//glPushMatrix(); // Modelview
+	//{
+	//	glLoadIdentity();
 
 		glMatrixMode(GL_TEXTURE);
 		glPushMatrix(); // Texture
@@ -114,8 +114,8 @@ void CubeMap::render( float* inverseTransMatrix )
 		glPopMatrix(); // Texture
 
 		glMatrixMode(GL_MODELVIEW);
-	}
-	glPopMatrix(); // Modelview
+	//}
+	//glPopMatrix(); // Modelview
 
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
