@@ -1,4 +1,5 @@
-uniform sampler2DRect inputTexture;
+uniform sampler2D inputTexture;
+uniform float height;
 
 varying vec2 topLeft;
 varying vec2 topRight;
@@ -8,12 +9,11 @@ varying vec2 bottomRight;
 void main(void)
 {
 	// NOTE: textureRect not supported on ATI
-    float left		= texture2DRect(inputTexture, topLeft).x;
-    float right		= texture2DRect(inputTexture, topRight).x;
-    float top		= texture2DRect(inputTexture, bottomLeft).x;
-    float bottom	= texture2DRect(inputTexture, bottomRight).x;
+    float left		= texture2D(inputTexture, topLeft / height).x;
+    float right		= texture2D(inputTexture, topRight / height).x;
+    float top		= texture2D(inputTexture, bottomLeft / height).x;
+    float bottom	= texture2D(inputTexture, bottomRight / height).x;
 	
 	float maxValue = max(max(left, right), max(top, bottom));
-	gl_FragColor = vec4(maxValue, maxValue, maxValue, 1);
-	//gl_FragColor = vec4(left.x, left.y, left.z, left.w);
+	gl_FragColor = vec4(maxValue, maxValue, maxValue, maxValue);
 }
