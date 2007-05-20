@@ -16,6 +16,7 @@
 #include "OBJMeshLoader.h"
 #include "SShapedCurveToneMapper.h"
 #include "PhotographicToneMapper.h"
+#include "GLMenu.h"
 
 
 //USE THIS FILE
@@ -50,12 +51,25 @@ Renderer::Renderer()
 , iOldYRotation( 0 )
 , iMouseX( 0 )
 , iMouseY( 0 )
-, iZoom( -1 )
+, iZoom( 0 )
+, iMouseButtonDown( GLUT_UP )
+, iShowMenu( false )
 {
 	InitMain();
 	Renderer::iCurrentRenderer = this;
 	iCubeMap = new CubeMap( 4 );
 	GetTrackball().SetResolution( 1.0 );
+	iMenu = new GLMenu(KTextureHeight, KTextureWidth, (int)GLUT_BITMAP_HELVETICA_18);
+	
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(m/M) Loop Materials");
 }
 
 
@@ -70,6 +84,7 @@ Renderer::~Renderer()
 	delete iToneMapper;
 	delete iIBLReflection;
 	delete iIBLRefraction;
+	delete iMenu;
 
 	if (iDragon)
 	{
@@ -111,7 +126,10 @@ void Renderer::CreateScene()
 {
 	unsigned char minExponent;
 	unsigned char maxExponent;
-	iCubeMap->setupCompressedCubeMap("./textures/stpeters", minExponent, maxExponent);
+	iCubeMap->setupCompressedCubeMap("./textures/stpeters512", minExponent, maxExponent);
+	/*iCubeMap->setupCompressedCubeMap("./textures/tappanYard/tappanYard", minExponent, maxExponent);*/
+	//iCubeMap->setupCompressedCubeMap("./textures/pisa/pisa", minExponent, maxExponent);
+
 	//iCubeMap->setupCubeMap("./textures/rnl");
 	//iCubeMap->setupCubeMap("./textures/stpeters");
 
@@ -193,9 +211,6 @@ void Renderer::FramesPerSec()
 */
 void Renderer::DrawText() const
 {
-	static GLfloat quadratic[3] = { 1.0f, 0.0f, 0.0f };
-	glPointParameterfv( GL_POINT_DISTANCE_ATTENUATION, quadratic );
-
 	float x( -0.9f ), y( -0.9f );
 	
 	//configure the transforms for 2D
@@ -263,8 +278,6 @@ void Renderer::RenderScene()
 
 	glPushMatrix();
 	{
-		//glTranslatef(0, 0, iZoom);
-
 		/************************************************************************/
 		/* OPTMIZE PLEASE!!!                                                    */
 		/************************************************************************/
@@ -285,39 +298,17 @@ void Renderer::RenderScene()
 		}
 		glPopMatrix();
 
-		//float inverseGL[16];
-		//Matrix4 inverse = Matrix4::inverse( trackballMatrix );
-		//inverse.getGLMatrix( inverseGL );
+		glTranslatef(0, 0, iZoom);
 		glMultMatrixf( trackballMatrixGL );
 
-		iIBLReflection->start( iCubeMap->getCubeMapId() );
-		//iIBLRefraction->start( iCubeMap->getCubeMapId() );
+		//iIBLReflection->start( iCubeMap->getCubeMapId() );
+		iIBLRefraction->start( iCubeMap->getCubeMapId() );
 		{
-			//glBegin(GL_QUADS);
-			//	glTexCoord2i(0, 0);
-			//	glVertex2f(0.0f, 0.0f);
-
-			//	glTexCoord2i(1, 0);
-			//	glVertex2f(0.5f, 0.0f);
-
-			//	glTexCoord2i(1, 1);
-			//	glVertex2f(0.5f, 0.5f);
-
-			//	glTexCoord2i(0, 1);
-			//	glVertex2f(0.0f, 0.5f);
-			//glEnd();
 			//gluSphere(pObj, 0.5, 128, 128);
-			
 			glCallList(iDragonDL);
-			//gluSphere(pObj, 0.3, 128, 128);
-			//glutSolidTeapot(0.3);
-			
-			//glutSolidTeapot(0.25);
-			//glutSolidTorus(0.05, 0.25, 32 ,32);
-			//glutSolidSphere(0.5, 128, 128);
 		}
-		iIBLReflection->stop();
-		//iIBLRefraction->stop();
+		//iIBLReflection->stop();
+		iIBLRefraction->stop();
 		
 	}
 	glPopMatrix();
@@ -341,6 +332,13 @@ void Renderer::RenderScene()
 	FramesPerSec();
 
 	DrawText();
+
+	// Draw Menu
+	if (iShowMenu)
+	{
+		iMenu->draw();
+	}
+	
 	
 	glutSwapBuffers();
 }
@@ -460,22 +458,26 @@ VirtualTrackball& Renderer::GetTrackball()
  */
 void Renderer::ProcessMouseEvent( int button, int state, int x, int y )
 {
-	iMouseY = y;
-	iMouseX = x;
+	iMouseY		= y;
+	iMouseX		= x;
+	
+	// needs to be stored also on the mouse motion
+	iZoomMouseY = y;
+
+	iMouseButtonDown = button;
 
 	//Set point of rotation
 	if (GLUT_LEFT_BUTTON == button)
 	{
 		if(GLUT_DOWN == state)
 		{
-			iMouseButtonDown = true;
+			//iMouseButtonDown = true;
 			SetOldXRotation( GetXRotation() );
 			SetOldYRotation( GetYRotation() );
 			GetTrackball().MouseDown(Vector3<float>(x, y, 0));
 		}
 		else
 		{
-			iMouseButtonDown = false;
 			GetTrackball().MouseUp(Vector3<float>(x, y, 0));
 		}
 	}
@@ -483,7 +485,7 @@ void Renderer::ProcessMouseEvent( int button, int state, int x, int y )
 
 void Renderer::ProcessMouseMotionEvent( int x, int y )
 {
-	if( iMouseButtonDown )
+	if( iMouseButtonDown == GLUT_LEFT_BUTTON )
 	{
 		SetXRotation( GetOldXRotation() 
 			+ (float)(y - iMouseY) / 4.0);
@@ -492,11 +494,21 @@ void Renderer::ProcessMouseMotionEvent( int x, int y )
 
 		GetTrackball().MouseMove(Vector3<float>(x, y, 0));
 	}
-	//else if( EMouseDownRight == iMouseButtonDown)
-	//{
-	//	this->iRenderer->SetZoom(this->iRenderer->GetZoom()+(((float)y - (float)this->iMouseY) / this->iRenderer->GetScreenHeightInPixels()) * 20);
-	//	this->iMouseY = y;
-	//}
+	else if ( iMouseButtonDown == GLUT_RIGHT_BUTTON  )
+	{
+		float factor = 0.07f;
+
+		if ( y - iZoomMouseY < 0 ) { factor *= -1; }
+
+		// increase always by the same amount
+		iZoom += factor;
+
+		iZoomMouseY = y;
+
+		// clamp the values
+		iZoom = iZoom > 1.0f ? 1.0f : iZoom;
+		iZoom = iZoom < -5.0f ? -5.0f : iZoom;
+	}
 }
 
 void Renderer::ProcessCursorKeys(int key, int x, int y )
@@ -521,6 +533,9 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 	case 'l':
 		iToneMapper->setLogAverage( iToneMapper->getLogAverage() - exposureIncrement);
 	    break;
+	case 'h':
+		iShowMenu = ! iShowMenu;
+		break;
 	case 'q':
 	default:
 		exit( 0 );
