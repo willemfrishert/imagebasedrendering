@@ -1,5 +1,5 @@
-#ifndef MYRENDERER_JOHANNES_H
-#define MYRENDERER_JOHANNES_H
+#ifndef RENDERER_H
+#define RENDERER_H
 
 #include "Basic.h"
 #include "Mesh.h"
