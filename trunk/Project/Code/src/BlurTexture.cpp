@@ -37,10 +37,10 @@ void BlurTexture::Init()
 	//iMipmapSize[2] = ETextureSize16;
 	//iMipmapSize[3] = ETextureSize8;
 
-	iBlurPasses[0] = 3;
-	iBlurPasses[1] = 3;
-	iBlurPasses[2] = 3;
-	iBlurPasses[3] = 3;
+	iBlurPasses[0] = 1;
+	iBlurPasses[1] = 4;
+	iBlurPasses[2] = 7;
+	iBlurPasses[3] = 10;
 
 	InitFramebufferObject();
 	InitTextures();

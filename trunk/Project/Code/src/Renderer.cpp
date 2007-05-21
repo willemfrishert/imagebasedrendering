@@ -12,12 +12,16 @@
 #include "GPUParallelReductor.h"
 #include "IBLPerfectReflection.h"
 #include "IBLRefraction.h"
+#include "Porcelain.h"
+#include "Diffuse.h"
 #include "Mesh.h"
 #include "OBJMeshLoader.h"
 #include "SShapedCurveToneMapper.h"
 #include "PhotographicToneMapper.h"
+#include "OpenGLUtility.h"
+#include "BloomEffect.h"
+#include "UIHandler.h"
 #include "GLMenu.h"
-
 
 //USE THIS FILE
 
@@ -54,10 +58,13 @@ Renderer::Renderer()
 , iZoom( 0 )
 , iMouseButtonDown( GLUT_UP )
 , iShowMenu( false )
+, iMaterialIndex( 0 )
+, iObjFileNameIndex( 0 )
 {
 	InitMain();
 	Renderer::iCurrentRenderer = this;
 	iCubeMap = new CubeMap( 4 );
+	iDiffuseConvCubeMap = new CubeMap( 4 );
 	GetTrackball().SetResolution( 1.0 );
 	iMenu = new GLMenu(KTextureHeight, KTextureWidth, (int)GLUT_BITMAP_HELVETICA_18);
 	
@@ -82,19 +89,11 @@ Renderer::~Renderer()
 	delete iLuminanceConverter;
 	delete iCubeMap;
 	delete iToneMapper;
-	delete iIBLReflection;
-	delete iIBLRefraction;
 	delete iMenu;
 
-	if (iDragon)
-	{
-		delete iDragon;
-	}
+	glDeleteLists(iObject, 1);
 
-	if (pObj)
-	{
-		gluDeleteQuadric(pObj);
-	}
+	delete[] iMaterials;
 }
 
 void Renderer::InitShaders()
@@ -126,52 +125,97 @@ void Renderer::CreateScene()
 {
 	unsigned char minExponent;
 	unsigned char maxExponent;
-	iCubeMap->setupCompressedCubeMap("./textures/stpeters/stpeters512", minExponent, maxExponent);
+
+	iCubeMap->setupCompressedCubeMap("./textures/stpeters", minExponent, maxExponent);
+	//iCubeMap->setupCompressedCubeMap("./textures/stpeters/stpeters512", minExponent, maxExponent);
 	/*iCubeMap->setupCompressedCubeMap("./textures/tappanYard/tappanYard", minExponent, maxExponent);*/
 	//iCubeMap->setupCompressedCubeMap("./textures/pisa/pisa", minExponent, maxExponent);
 
-	//iCubeMap->setupCubeMap("./textures/rnl");
-	//iCubeMap->setupCubeMap("./textures/stpeters");
+	iDiffuseConvCubeMap->setupCompressedCubeMap("./textures/stpeters_conv_phong_1", minExponent, maxExponent);
+
+
+	iBloomEffect = new  BloomEffect();
+
+	iUIHandler->AddKeyListener( iBloomEffect );
 
 	/************************************************************************/
 	/* XXX:                                                                 */
 	/************************************************************************/
 	this->iLuminanceConverter = new LuminanceConverter(KTextureWidth, KTextureHeight, -1, -1);
-	
+
 	// Setup Scene Texture
 	this->iScreenCapture = new ScreenCapture(KTextureHeight, KTextureWidth);
 
 	this->iToneMapper = new PhotographicToneMapper(0, 0, KTextureWidth, KTextureHeight);
 	this->iSCurveToneMapper = new SShapedCurveToneMapper(0, 0, KTextureWidth, KTextureHeight);
 
-	this->iIBLReflection = new IBLPerfectReflection("./shader/iblreflection");
-	this->iIBLRefraction = new IBLRefraction(1.5f, 1.0f, "./shader/iblrefraction");
+	this->iMaterials[0] = new IBLPerfectReflection( "./shader/iblreflection", iCubeMap->getCubeMapId() );
+	this->iMaterials[1] = new IBLRefraction(1.5f, 1.0f, "./shader/iblrefraction", iCubeMap->getCubeMapId());
+	this->iMaterials[2] = new Diffuse( "./shader/diffuse", iDiffuseConvCubeMap->getCubeMapId() );
+	this->iMaterials[3] = new Porcelain(1.333f, 1.0f, "./shader/porcelain", iCubeMap->getCubeMapId(), iDiffuseConvCubeMap->getCubeMapId() );
 
-	pObj = gluNewQuadric();
-
-	gluQuadricDrawStyle(pObj, GLU_FILL);
-	gluQuadricNormals(pObj, GLU_SMOOTH);
-	gluQuadricTexture(pObj, GL_TRUE);
-
-	createDragonDL();
+	// load object file names from file
+	OBJLoader::loadModelFileNames("./3ds/coolobjs.txt", iObjFileNames, "./3ds/");
+	// if the list is empty, then create a simple sphere to represent the object
+	if ( iObjFileNames.empty() )
+	{
+		iObject = CreateDisplayListSphere();
+	}
+	else
+	{
+		iObject = CreateDisplayList( iObjFileNames[0] );
+	}
 }
 
-void Renderer::createDragonDL() 
+GLuint Renderer::CreateDisplayListSphere()
 {
-	//iDragon = OBJLoader::loadModel("./3ds/2HeadedDragon50KSmooth.obj");
-	iDragon = OBJLoader::loadModel("./3ds/teapot.obj");
+	GLuint displayListId = 0;
+
+	GLUquadricObj* quadricObj = gluNewQuadric();
+	gluQuadricDrawStyle(quadricObj, GLU_FILL);
+	gluQuadricNormals(quadricObj, GLU_SMOOTH);
+	gluQuadricTexture(quadricObj, GL_TRUE);
 
 	// Create the id for the list
-	iDragonDL = glGenLists(1);
+	displayListId = glGenLists(1);
 
 	// start list
-	glNewList(iDragonDL,GL_COMPILE);
+	glNewList( displayListId, GL_COMPILE );
 
-		// call the function that contains the rendering commands
-		iDragon->draw();
+	// call the function that contains the rendering commands
+	gluSphere(quadricObj, 0.5, 128, 128);
 
 	// endList
 	glEndList();
+
+	gluDeleteQuadric(quadricObj);
+
+	return displayListId;
+}
+GLuint Renderer::CreateDisplayList( const string& aObjFilename )
+{
+	GLuint displayListId = 0;
+
+	std::cout << "Loading model: \"" << aObjFilename << "\". Please wait... " << std::endl;
+	Mesh* mesh = OBJLoader::loadModel( aObjFilename );
+	std::cout << "Done!" << std::endl;
+
+	if ( mesh != NULL )
+	{
+		// Create the id for the list
+		displayListId = glGenLists(1);
+
+		// start list
+		glNewList( displayListId, GL_COMPILE );
+
+		// call the function that contains the rendering commands
+		mesh->draw();
+
+		// endList
+		glEndList();
+	}
+
+	return displayListId;
 }
 
 /** \brief Method that calculates iFrames per second
@@ -267,8 +311,9 @@ void Renderer::RenderScene()
 	static float trackballMatrixGL[16];
 
 	// Setup FBO to render the scene to a texture
-	iScreenCapture->startCapture();
-	
+	//iScreenCapture->startCapture();
+	iBloomEffect->Begin();
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -301,20 +346,18 @@ void Renderer::RenderScene()
 		glTranslatef(0, 0, iZoom);
 		glMultMatrixf( trackballMatrixGL );
 
-		//iIBLReflection->start( iCubeMap->getCubeMapId() );
-		iIBLRefraction->start( iCubeMap->getCubeMapId() );
+		iMaterials[iMaterialIndex]->start();
 		{
-			//gluSphere(pObj, 0.5, 128, 128);
-			glCallList(iDragonDL);
+			glCallList( iObject );
 		}
-		//iIBLReflection->stop();
-		iIBLRefraction->stop();
-		
+		iMaterials[iMaterialIndex]->stop();
+
 	}
 	glPopMatrix();
 
 	// unbind and render
-	GLuint capturedSceneTexId = iScreenCapture->stopCapture();
+	//GLuint capturedSceneTexId = iScreenCapture->stopCapture();
+	GLuint capturedSceneTexId = iBloomEffect->End();
 
 	GLuint finalScene = iLuminanceConverter->processData(capturedSceneTexId);
 
@@ -323,7 +366,7 @@ void Renderer::RenderScene()
 
 	iToneMapper->toneMap(capturedSceneTexId, finalScene);
 	//iSCurveToneMapper->toneMap(capturedSceneTexId, finalScene);
-
+	
 	//RenderSceneOnQuad(capturedSceneTexId, GL_TEXTURE_2D, 512, 512);
 
 	//iScreenCapture->renderToScreen();
@@ -450,6 +493,11 @@ VirtualTrackball& Renderer::GetTrackball()
 	return this->trackball;
 }
 
+void Renderer::setUIHandler(UIHandler* aUIHandler)
+{
+	iUIHandler = aUIHandler;
+}
+
 /**
  * @param button
  * @param state
@@ -533,13 +581,52 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 	case 'l':
 		iToneMapper->setLogAverage( iToneMapper->getLogAverage() - exposureIncrement);
 	    break;
+	case 'm':
+		iMaterialIndex = (iMaterialIndex + 1) % KNumberOfMaterials;
+		break;
+	case 'M':
+		iMaterialIndex -= 1;
+		if ( iMaterialIndex < 0 )
+		{
+			iMaterialIndex = KNumberOfMaterials - 1;
+		}
+		break;
+	case 'o': 
+		// if there is more than one object, allow user to change object
+		if ( iObjFileNames.size() > 1 )
+		{
+			iObjFileNameIndex = (iObjFileNameIndex + 1) % iObjFileNames.size();
+
+			// delete current display list
+			glDeleteLists( iObject, 1 );
+
+			// and create new display list
+			iObject = CreateDisplayList( iObjFileNames[iObjFileNameIndex] );
+		}
+		break;
+	case 'O':
+		// if there is more than one object, allow user to change object
+		if ( iObjFileNames.size() > 1 )
+		{
+			iObjFileNameIndex -= 1;
+			if ( iObjFileNameIndex < 0 )
+			{
+				iObjFileNameIndex = iObjFileNames.size() - 1;
+			}
+
+			// delete current display list
+			glDeleteLists( iObject, 1 );
+
+			// and create new display list
+			iObject = CreateDisplayList( iObjFileNames[iObjFileNameIndex] );
+		}
+		break;
+	case 'q':
+		exit( 0 );
+	    break;
 	case 'h':
 		iShowMenu = ! iShowMenu;
 		break;
-	case 'q':
-	default:
-		exit( 0 );
-	    break;
 	}
 }
 

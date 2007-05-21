@@ -92,6 +92,7 @@ int main(int argc, char **argv)
 	ui->AddMouseListener( renderer );
 	ui->AddKeyListener( renderer );
 
+	renderer->setUIHandler( ui );
 	renderer->CreateScene();
 
 	//glutFullScreen();
