@@ -18,6 +18,10 @@ public:
 
 	void stop();
 
+	virtual void setEnvironmentCubeMap( GLuint aCubeMapTexId );
+
+	virtual void setDiffuseConvCubeMap( GLuint aCubeMapTexId );
+
 	// methods
 private:
 

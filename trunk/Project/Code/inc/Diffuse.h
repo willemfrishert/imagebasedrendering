@@ -18,6 +18,8 @@ public:
 
 	void stop();
 
+	void setDiffuseConvCubeMap( GLuint aCubeMapTexId );
+
 	// methods
 private:
 

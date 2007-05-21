@@ -156,6 +156,14 @@ private:
 
 	GLuint CreateDisplayList( const string& aObjFilename );
 
+	void LoadLightEnvironmentFileNames( const string& aEnvDirectoryFileName,
+										const string& aLightEnvFileName,
+										std::vector< std::string >& aReflectFileNames, 
+										std::vector< std::string >& aDiffuseConvFileNames, 
+										const std::string aFilePrefix );
+
+	bool CheckExistanceCubeMap(const string& aStrReflectMapName,
+							   const string& aStrDiffuseConvMapName);
 
 	//DRAWING FUNCTIONS
 	//------------------
@@ -198,8 +206,6 @@ private:
 	GLMenu* iMenu;
 	bool iShowMenu;
 
-	CubeMap* iCubeMap;
-	CubeMap* iDiffuseConvCubeMap;
 
 	BloomEffect* iBloomEffect;
 	ScreenCapture* iScreenCapture;
@@ -212,8 +218,15 @@ private:
 	VirtualTrackball trackball;
 
 	vector<string> iObjFileNames;
+	vector<string> iLightEnvFileNames;
 	int iObjFileNameIndex;
 	GLuint iObject;
+
+	vector<string> iEnvironmentFileNames;
+	vector<string> iDiffuseConvFileNames;
+	int iLightEnvironmentIndex;
+	CubeMap* iCubeMap;
+	CubeMap* iDiffuseConvCubeMap;
 };
 
 
