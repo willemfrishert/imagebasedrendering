@@ -24,7 +24,7 @@ void main(void)
 	//}
 
 	//gl_FragColor = encodeRGBE(colorDecoded);
-	gl_FragColor = vec4(colorDecoded.rgb,1.0);
+	gl_FragColor = vec4(colorDecoded.rgb/256.0,1.0);
 
 	//gl_FragColor = encodeRGBE(max(log2(colorDecoded),vec4(0.0)));
 	//gl_FragColor = encodeRGBE(colorDecoded/maxLum);

@@ -4,7 +4,7 @@ uniform samplerCube diffuseCubeMap;
 //varying vec3 R;
 varying vec3 N;
 varying vec3 V;
-//varying float Ks;
+varying float ratio;
 
 vec4 decodeRGBE(vec4 color);
 vec4 encodeRGBE(vec4 color);
@@ -29,19 +29,23 @@ void main(void)
 	//vec4 finalColor = mix(matColor, reflectionColor, Ks);
 	vec4 reflectionColor = decodeRGBE( textureCube(reflectionCubeMap, normR) );
 
-	float maxChannel = max( reflectionColor.r, max(reflectionColor.g, reflectionColor.b) );
+	// manual brightpass, needs to be refactored.
+	//float maxChannel = max( reflectionColor.r, max(reflectionColor.g, reflectionColor.b) );
 
-	if (maxChannel < 2.0)
-	{
+	//if (maxChannel < 2.0)
+	//{
 		const float threshold = 0.25;
-		reflectionColor *= threshold;
-	}
+		reflectionColor *= ratio;
+	//}
 
 	vec4 diffuseColor = decodeRGBE( textureCube(diffuseCubeMap, normN) );
 
-	vec4 finalColor = reflectionColor + diffuseColor;
-	finalColor = reflectionColor * pow( dot(normN, normalize(-V) ), 5.0);
-	finalColor += diffuseColor;
+	vec4 finalColor = vec4(0.0,0.0,0.0,1.0);
+	finalColor = reflectionColor;
+	finalColor += diffuseColor * 0.4;
+
+	//finalColor = vec4(normN, 1.0);
+	//finalColor = max(finalColor, vec4(1e-4));
 
 //	finalColor = mix( reflectionColor,diffuseColor, vec4(0.75) );
 //	finalColor = max( reflectionColor,diffuseColor );

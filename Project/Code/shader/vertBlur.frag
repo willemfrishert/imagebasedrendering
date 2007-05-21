@@ -25,7 +25,7 @@ void main(void)
 	
 	vec4 color1 = texture2D(originalTexture, texCoord.st + vec2( 0.0, -2.0 )*delta );
 	vec4 color2 = texture2D(originalTexture, texCoord.st + vec2( 0.0, -1.0 )*delta );
-	vec4 color3 = texture2D(originalTexture, texCoord.st                          );
+	vec4 color3 = texture2D(originalTexture, texCoord.st                           );
 	vec4 color4 = texture2D(originalTexture, texCoord.st + vec2( 0.0,  1.0 )*delta );
 	vec4 color5 = texture2D(originalTexture, texCoord.st + vec2( 0.0,  2.0 )*delta );
 
@@ -35,14 +35,14 @@ void main(void)
 	//color4 = decodeRGBE(color4);
 	//color5 = decodeRGBE(color5);
 
-	fragColor.rgb += blurWeight3 * color1.rgb;
-	fragColor.rgb += blurWeight2 * color2.rgb;
-	fragColor.rgb += blurWeight1 * color3.rgb;
-	fragColor.rgb += blurWeight2 * color4.rgb;
-	fragColor.rgb += blurWeight3 * color5.rgb;
+	fragColor.rgb += blurWeight3 * color1.rgb * 256.0;
+	fragColor.rgb += blurWeight2 * color2.rgb * 256.0;
+	fragColor.rgb += blurWeight1 * color3.rgb * 256.0;
+	fragColor.rgb += blurWeight2 * color4.rgb * 256.0;
+	fragColor.rgb += blurWeight3 * color5.rgb * 256.0;
 	
 	//gl_FragColor = encodeRGBE(fragColor);
-	gl_FragColor = vec4(fragColor.rgb, 1.0);
+	gl_FragColor = vec4(fragColor.rgb/256.0, 1.0);
 //	gl_FragColor = vec4(1.0,1.0,1.0,1.0);
 //	gl_FragColor = vec4(texture2D(originalTexture, gl_TexCoord[0].xy).rgb, 1.0);
 //	gl_FragColor = texture2D(originalTexture, (fragCoord                    ) * delta );
