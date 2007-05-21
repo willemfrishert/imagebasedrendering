@@ -36,6 +36,11 @@ void Diffuse::start()
 	iShaderProgram->useProgram();
 }
 
+void Diffuse::setDiffuseConvCubeMap( GLuint aCubeMapTexId )
+{
+	this->iCubeMapTexId = aCubeMapTexId;
+}
+
 /**
 *
 */

@@ -66,6 +66,17 @@ void Porcelain::stop()
 	glEnable( GL_TEXTURE_2D );
 }
 
+void Porcelain::setEnvironmentCubeMap( GLuint aCubeMapTexId )
+{
+	this->iCubeMapTexId = aCubeMapTexId;
+}
+
+void Porcelain::setDiffuseConvCubeMap( GLuint aCubeMapTexId )
+{
+	this->iDiffuseCubeMapTexId = aCubeMapTexId;
+}
+
+
 /**
 *
 */
