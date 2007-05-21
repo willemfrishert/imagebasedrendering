@@ -4,6 +4,7 @@
  * 
  * @file OBJMeshLoader.h
  * @author João Pedro Jorge
+ * @co-author Willem Frishert :P
  */
 #pragma once
 
@@ -15,5 +16,8 @@ public:
 	OBJLoader(void);
 	~OBJLoader(void);
 
-	static Mesh* loadModel(std::string filename);
+	static void loadModelFileNames( std::string aObjectFileName, 
+									std::vector< std::string >& aFileNames, 
+									std::string aFilePrefix );
+	static Mesh* loadModel( std::string filename );
 };

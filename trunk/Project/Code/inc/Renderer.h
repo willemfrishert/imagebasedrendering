@@ -21,13 +21,21 @@ class ScreenCapture;
 class LuminanceConverter;
 class PhotographicToneMapper;
 class SShapedCurveToneMapper;
+
+class Material;
 class IBLPerfectReflection;
 class IBLRefraction;
+class Porcelain;
+class Diffuse;
+
 class Mesh;
+class BloomEffect;
+class UIHandler;
 
 //CONSTANTS:
 const int KNumberOfColorMaps = 3;
 const int KNumberOfShaderPrograms = 3;
+const int KNumberOfMaterials = 4;
 
 //CLASS DECLARATION
 
@@ -113,6 +121,7 @@ public:
 
 	//SETTERS
 	//---------------------------------------
+	void setUIHandler(UIHandler* aUIHandler);
 
 	//PRIVATE FUNCTIONS
 	//------------------
@@ -143,7 +152,9 @@ private:
 	void RenderSceneOnQuad(GLuint textureId, GLenum target, 
 		int width, int height);
 
-	void createDragonDL();
+	GLuint CreateDisplayListSphere();
+
+	GLuint CreateDisplayList( const string& aObjFilename );
 
 
 	//DRAWING FUNCTIONS
@@ -182,24 +193,27 @@ private:
 	int iMouseY;
 	int iZoomMouseY;
 
+	UIHandler* iUIHandler;
 	// Menu
 	GLMenu* iMenu;
 	bool iShowMenu;
 
 	CubeMap* iCubeMap;
+	CubeMap* iDiffuseConvCubeMap;
 
+	BloomEffect* iBloomEffect;
 	ScreenCapture* iScreenCapture;
 	LuminanceConverter* iLuminanceConverter;
 	PhotographicToneMapper* iToneMapper;
 	SShapedCurveToneMapper* iSCurveToneMapper;
-	IBLPerfectReflection* iIBLReflection;
-	IBLRefraction* iIBLRefraction;
 
+	Material* iMaterials[KNumberOfMaterials];
+	int iMaterialIndex;
 	VirtualTrackball trackball;
 
-	GLUquadricObj* pObj;
-	Mesh* iDragon;
-	GLuint iDragonDL;
+	vector<string> iObjFileNames;
+	int iObjFileNameIndex;
+	GLuint iObject;
 };
 
 
