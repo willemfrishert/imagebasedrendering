@@ -4,6 +4,7 @@
 #include "ShaderUniformValue.h"
 #include "ShaderProgram.h"
 #include "CodecRGBE.h"
+#include "IKeyListener.h"
 #include "IBLRefraction.h"
 
 IBLRefraction::IBLRefraction(float aEta1, float aEta2, const string& ashaderFilename, GLuint aCubeMapTexId)
@@ -54,8 +55,12 @@ void IBLRefraction::setEnvironmentCubeMap( GLuint aCubeMapTexId )
  */
 void IBLRefraction::initShaders(const string& ashaderFilename)
 {
-	float eta				= min(iEta2, iEta1) / max(iEta2, iEta1);
-	float f					= ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
+	//float eta				= min(iEta2, iEta1) / max(iEta2, iEta1);
+	//float f					= ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
+
+	float f, eta;					
+	computeEta(eta, f);
+
 	iShaderProgram			= new ShaderProgram();
 	iCubeMapUniform			= new ShaderUniformValue<int>("reflectionCubeMap", 0);
 	iEtaUniform				= new ShaderUniformValue<float>("eta", eta);
@@ -75,4 +80,57 @@ void IBLRefraction::initShaders(const string& ashaderFilename)
 
 	// after all the shaders have been attached
 	iShaderProgram->buildProgram();
+}
+
+void IBLRefraction::computeEta( float& eta, float& f )
+{
+	eta = min(iEta2, iEta1) / max(iEta2, iEta1);
+
+	f	= ((1.0 - eta) * (1.0 - eta)) / ((1.0 + eta) * (1.0 + eta));
+}
+
+/**
+ * @param key
+ * @param x
+ * @param y
+ */
+void IBLRefraction::ProcessCursorKeys(int key, int x, int y )
+{
+	
+}
+
+/**
+ * @brief processes the ordinary keys
+ * @param key
+ * @param x
+ * @param y
+ */
+void IBLRefraction::ProcessNormalKeys(unsigned char key, int x, int y )
+{
+	float step = 0.1f;
+	float upperBound = 2.5f;
+	float lowerBound = 1.0f;
+	float eta, f;
+
+	switch( key )
+	{
+	case 'f':
+		{
+			float inc = iEta1 + step;
+			iEta1 = inc > upperBound ? upperBound: inc;
+			computeEta(eta, f);
+			iEtaUniform->setValue( eta );
+			iFUniform->setValue( f );
+		}
+		break;
+	case 'F':
+		{
+			float dec = iEta1 - step;
+			iEta1 = dec < lowerBound ? lowerBound: dec;
+			computeEta(eta, f);
+			iEtaUniform->setValue( eta );
+			iFUniform->setValue( f );
+		}
+		break;
+	}
 }
