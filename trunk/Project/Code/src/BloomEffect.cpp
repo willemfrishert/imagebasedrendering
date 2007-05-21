@@ -68,8 +68,6 @@ void BloomEffect::InitTextures()
 
 	iOriginalFBO->bind();
 
-	iOriginalFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
-
 	// initialize texture that will store the framebuffer image
 	glGenTextures(1, &iOriginalTexture);
 
@@ -98,10 +96,11 @@ void BloomEffect::InitTextures()
 
 	iOriginalFBO->attachTexture(iBrightpassTexture, GL_COLOR_ATTACHMENT1_EXT, GL_TEXTURE_2D, 0);
 
+	iOriginalFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
+
 	FrameBufferObject::unbind();
 
 	iBlendedFBO->bind();
-	iBlendedFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
 
 	glGenTextures(1, &iBlendedTexture);
 
@@ -111,7 +110,10 @@ void BloomEffect::InitTextures()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, iOriginalImageSize, iOriginalImageSize, 0, GL_RGBA, GL_FLOAT, NULL);
+	
 	iBlendedFBO->attachTexture(iBlendedTexture, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, 0);
+
+	iBlendedFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
 
 	FrameBufferObject::unbind();
 }
