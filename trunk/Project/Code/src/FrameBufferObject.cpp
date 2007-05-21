@@ -120,9 +120,17 @@ void FrameBufferObject::attachDepthRenderBuffer(GLuint aWidth, GLuint aHeight)
 	glGenRenderbuffersEXT(1, &depthBufferId);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthBufferId);
 	glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT32, aWidth, aHeight);
+	
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_FrameBufferId);
 	glFramebufferRenderbufferEXT( GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depthBufferId);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+
+#ifdef _DEBUG
+	errcheck();
+
+	//see if everything is OK
+	CHECK_FRAMEBUFFER_STATUS()
+#endif // _DEBUG
 }
 
 
