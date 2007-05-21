@@ -1,8 +1,10 @@
 #include "OpenGLUtility.h"
 
-void OpenGLUtility::RenderSceneOnQuadMultiTex(const vector<GLuint>& aTextureId,
-											  const vector<GLenum>& aTextureUnit)
+void OpenGLUtility::RenderSceneOnQuadMultiTex(const GLuint* aTextureId, int aNumberOfTextures)
 {
+	static GLenum aTextureUnit[] = { GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, GL_TEXTURE3, GL_TEXTURE4,
+									 GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7, GL_TEXTURE8, GL_TEXTURE9 };
+
 	glMatrixMode( GL_PROJECTION );
 	glPushMatrix();
 	{
@@ -15,7 +17,7 @@ void OpenGLUtility::RenderSceneOnQuadMultiTex(const vector<GLuint>& aTextureId,
 			glLoadIdentity();
 
 			// setup flags and bind textures
-			EnableMultitexturing(aTextureId, aTextureUnit);
+			EnableMultitexturing(aTextureId, aTextureUnit, aNumberOfTextures);
 
 			glBegin(GL_QUADS);
 
@@ -42,32 +44,25 @@ void OpenGLUtility::RenderSceneOnQuadMultiTex(const vector<GLuint>& aTextureId,
 
 	glMatrixMode( GL_MODELVIEW );
 
-	DisableMultitexturing( aTextureUnit );
+	DisableMultitexturing( aTextureUnit, aNumberOfTextures );
 }
 
-void OpenGLUtility::EnableMultitexturing( const vector<GLuint>& aTextureId, const vector<GLenum>& aTextureUnit )
+void OpenGLUtility::EnableMultitexturing( const GLuint* aTextureId, const GLenum* aTextureUnit, int aNumberOfTextures )
 {
-	vector<GLuint>::const_iterator texIterator = aTextureId.begin();
-	vector<GLenum>::const_iterator unitIterator = aTextureUnit.begin();
-
-	for (;(texIterator!=aTextureId.end()) && (unitIterator!= aTextureUnit.end()); texIterator++, unitIterator++)
+	for (int i = 0; i < aNumberOfTextures; i++)
 	{
-
-		GLenum i = *unitIterator;
 		// enable multitexturing
-		glActiveTexture( i );
+		glActiveTexture( aTextureUnit[i] );
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, *texIterator );
+		glBindTexture(GL_TEXTURE_2D, aTextureId[i] );
 	}
 }
 
-void OpenGLUtility::DisableMultitexturing( const vector<GLenum>& aTextureUnit )
+void OpenGLUtility::DisableMultitexturing( const GLenum* aTextureUnit, int aNumberOfTextures )
 {
-	vector<GLenum>::const_iterator unitIterator = aTextureUnit.begin();
-
-	for (;unitIterator!= aTextureUnit.end(); unitIterator++)
+	for (int i = 0; i < aNumberOfTextures; i++)
 	{
-		glActiveTexture( *unitIterator );
+		glActiveTexture( aTextureUnit[i] );
 		glDisable(GL_TEXTURE_2D);
 	}
 

@@ -1,4 +1,6 @@
 #include <string>
+#include <iostream>
+#include <fstream>
 
 #include "Vector2.h"
 #include "Vector3.h"
@@ -8,12 +10,56 @@
 #include "glm_avl.h"
 #include "OBJMeshLoader.h"
 
+
 OBJLoader::OBJLoader(void)
 {
 }
 
 OBJLoader::~OBJLoader(void)
 {
+}
+/**
+* @param string aObjectFileName
+* @param vector<string>& aFileNames
+* @return 
+*/
+void OBJLoader::loadModelFileNames( std::string aObjectFileName,
+								    std::vector< std::string >& aFileNames, 
+									std::string aFilePrefix )
+{
+	// try to open the object file name
+	ifstream input;
+	input.open(aObjectFileName.c_str(), ifstream::in);
+	
+	// if the object file name is open
+	if (input.is_open())
+	{
+		// while input is good
+		while (input.good())
+		{
+			// get a complete line
+			std::string str;
+			std::getline( input, str );
+
+			str = aFilePrefix + str;
+
+			// open the filename specified on that line
+			ifstream objectFile;
+			objectFile.open( str.c_str(), ifstream::in);
+
+			// if the objectfile exists
+			if ( objectFile.is_open() )
+			{
+				// close it and store the string in the list
+				objectFile.close();
+				aFileNames.push_back( str );
+			}
+		}
+
+		// only need to close the file if it was opened correctly
+		input.close();
+	}
+
 }
 
 /**
