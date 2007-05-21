@@ -9,6 +9,22 @@ typedef unsigned int GLenum;
 
 using namespace std;
 
+#define SUFFIX_POSX "_posx.hdr"
+#define SUFFIX_POSY "_posy.hdr"
+#define SUFFIX_POSZ "_posz.hdr"
+#define SUFFIX_NEGX "_negx.hdr"
+#define SUFFIX_NEGY "_negy.hdr"
+#define SUFFIX_NEGZ "_negz.hdr"
+
+static const string suffixes[] = {
+	SUFFIX_POSY, 
+	SUFFIX_POSZ, 
+	SUFFIX_NEGX, 
+	SUFFIX_POSX,
+	SUFFIX_NEGY,
+	SUFFIX_NEGZ
+};
+
 class CubeMap
 {
 public:
@@ -16,7 +32,7 @@ public:
 	~CubeMap();
 
 	void setupCubeMap(string filenamePrefix);
-	void setupCompressedCubeMap(string filenamePrefix, unsigned char& minExponent, unsigned char& maxExponent);
+	void setupCompressedCubeMap( string filenamePrefix );
 
 	void render(float* inverseTransMatrix);
 

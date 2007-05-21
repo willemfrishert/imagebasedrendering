@@ -18,6 +18,8 @@ public:
 
 	void stop();
 
+	void setEnvironmentCubeMap( GLuint aCubeMapTexId );
+
 	// methods
 private:
 
