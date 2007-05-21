@@ -7,22 +7,6 @@
 // not a good solution though
 #include <gl/glut.h>
 
-#define SUFFIX_POSX "_posx.hdr"
-#define SUFFIX_POSY "_posy.hdr"
-#define SUFFIX_POSZ "_posz.hdr"
-#define SUFFIX_NEGX "_negx.hdr"
-#define SUFFIX_NEGY "_negy.hdr"
-#define SUFFIX_NEGZ "_negz.hdr"
-
-static const string suffixes[] = {
-	SUFFIX_POSY, 
-	SUFFIX_POSZ, 
-	SUFFIX_NEGX, 
-	SUFFIX_POSX,
-	SUFFIX_NEGY,
-	SUFFIX_NEGZ
-};
-
 static const float cubeSide = 7.0f;
 
 static float vertices[8][3] = {
@@ -223,9 +207,11 @@ void CubeMap::setupCubeMapTextures(GLenum type, GLenum format)
 	glTexGeni(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP); 
 }
 
-void CubeMap::setupCompressedCubeMap(string filenamePrefix, 
-									 unsigned char& minExponent, unsigned char& maxExponent)
+void CubeMap::setupCompressedCubeMap( string filenamePrefix )
 {
+	unsigned char minExponent;
+	unsigned char maxExponent;
+
 	HDRLoaderResultEncoded hdrPic;
 	unsigned char** faces = (unsigned char**)malloc(sizeof(int) * 6);
 

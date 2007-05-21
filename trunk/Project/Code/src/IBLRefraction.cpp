@@ -44,6 +44,11 @@ void IBLRefraction::stop()
 	glDisable(GL_TEXTURE_CUBE_MAP);
 }
 
+void IBLRefraction::setEnvironmentCubeMap( GLuint aCubeMapTexId )
+{
+	this->iCubeMapTexId = aCubeMapTexId;
+}
+
 /**
  * @param ashaderFilename
  */

@@ -60,6 +60,7 @@ Renderer::Renderer()
 , iShowMenu( false )
 , iMaterialIndex( 0 )
 , iObjFileNameIndex( 0 )
+, iLightEnvironmentIndex( 0 )
 {
 	InitMain();
 	Renderer::iCurrentRenderer = this;
@@ -117,21 +118,128 @@ void Renderer::InitMain()
 	glEnable(GL_DEPTH_TEST); // Enable the depth test (z-buffer)
 }
 
+void Renderer::LoadLightEnvironmentFileNames( const string& aEnvDirectoryFileName,
+											  const string& aLightEnvFileName,
+											  std::vector< std::string >& aReflectFileNames, 
+											  std::vector< std::string >& aDiffuseConvFileNames, 
+											  const std::string aDirectoryPrefix )
+{
+	ifstream DirectoryFile;
+	DirectoryFile.open(aEnvDirectoryFileName.c_str(), ifstream::in);
+
+	// if the file containing the directory names has been opened
+	if (DirectoryFile.is_open())
+	{
+		// while input is good
+		while (DirectoryFile.good())
+		{
+			// get a complete line
+			std::string strDirectory;
+
+			std::getline( DirectoryFile, strDirectory );
+
+			strDirectory = aDirectoryPrefix + strDirectory + "/";
+
+			// see if the lighting environment file containing the actual names can be opened
+			ifstream lightEnv;
+			lightEnv.open( (strDirectory + aLightEnvFileName).c_str(), ifstream::in);
+
+			// if the lightEnv.txt exists
+			if ( lightEnv.is_open() )
+			{
+				std::string strReflectMapName;
+				std::string strDiffuseConvMapName;
+
+				// while input is good
+				if (lightEnv.good())
+				{
+					// get a complete line
+					std::getline( lightEnv, strReflectMapName );
+				}
+
+				if ( lightEnv.good() )
+				{
+					// get a complete line
+					std::getline( lightEnv, strDiffuseConvMapName );
+				}
+
+				// close it and store check if the cubemaps exist
+				lightEnv.close();
+
+
+				if (CheckExistanceCubeMap( strDirectory + strReflectMapName, strDirectory + strDiffuseConvMapName  ))
+				{
+					aReflectFileNames.push_back( strDirectory + strReflectMapName );
+					aDiffuseConvFileNames.push_back( strDirectory + strDiffuseConvMapName );
+				}
+			}
+		}
+
+		// only need to close the file if it was opened correctly
+		DirectoryFile.close();
+	}
+}
+
+bool Renderer::CheckExistanceCubeMap(const string& aStrReflectMapName,
+									 const string& aStrDiffuseConvMapName)
+{
+	// now test to see if the reflectance cubemap and diffuse convolution cubemap can be found
+	bool LightEnvOK = true;
+
+	for (int i = 0; i < 6; i++)
+	{
+		ifstream lightEnvFile;
+		lightEnvFile.open( (aStrReflectMapName + suffixes[i]).c_str(), ifstream::in);
+		// if the directory file name is open
+		if (lightEnvFile.is_open())
+		{
+			lightEnvFile.close();
+		}
+		else
+		{
+			LightEnvOK = false;
+		}
+
+		ifstream lightDiffuseConvEnvFile;
+		lightDiffuseConvEnvFile.open( (aStrDiffuseConvMapName + suffixes[i]).c_str(), ifstream::in);
+		// if the directory file name is open
+		if (lightDiffuseConvEnvFile.is_open())
+		{
+			lightDiffuseConvEnvFile.close();
+		}
+		else
+		{
+			LightEnvOK = false;
+		}
+
+	}
+
+	return LightEnvOK;
+}
+
 /** \brief Method that creates a mesh
  *
  *   Creates an instance of a desired mesh type
  */
 void Renderer::CreateScene()
 {
-	unsigned char minExponent;
-	unsigned char maxExponent;
+	LoadLightEnvironmentFileNames("./textures/lightEnvironments.txt",
+								  "lightEnv.txt",
+								  iEnvironmentFileNames,
+								  iDiffuseConvFileNames,
+								  "./textures/");
+	if (iEnvironmentFileNames.empty() || iDiffuseConvFileNames.empty())
+	{
+		cout << "Could not find any lighting environment." << endl;
+		exit( -1 );
+	}
 
-	iCubeMap->setupCompressedCubeMap("./textures/stpeters", minExponent, maxExponent);
+	iCubeMap->setupCompressedCubeMap( iEnvironmentFileNames[iLightEnvironmentIndex] );
 	//iCubeMap->setupCompressedCubeMap("./textures/stpeters/stpeters512", minExponent, maxExponent);
-	/*iCubeMap->setupCompressedCubeMap("./textures/tappanYard/tappanYard", minExponent, maxExponent);*/
+	//iCubeMap->setupCompressedCubeMap("./textures/tappanYard/tappanYard", minExponent, maxExponent);
 	//iCubeMap->setupCompressedCubeMap("./textures/pisa/pisa", minExponent, maxExponent);
 
-	iDiffuseConvCubeMap->setupCompressedCubeMap("./textures/stpeters_conv_phong_1", minExponent, maxExponent);
+	iDiffuseConvCubeMap->setupCompressedCubeMap( iDiffuseConvFileNames[iLightEnvironmentIndex] );
 
 
 	iBloomEffect = new  BloomEffect();
@@ -155,7 +263,7 @@ void Renderer::CreateScene()
 	this->iMaterials[3] = new Porcelain(1.333f, 1.0f, "./shader/porcelain", iCubeMap->getCubeMapId(), iDiffuseConvCubeMap->getCubeMapId() );
 
 	// load object file names from file
-	OBJLoader::loadModelFileNames("./3ds/coolobjs.txt", iObjFileNames, "./3ds/");
+	OBJLoader::loadModelFileNames("./3ds/models.txt", iObjFileNames, "./3ds/");
 	// if the list is empty, then create a simple sphere to represent the object
 	if ( iObjFileNames.empty() )
 	{
@@ -165,6 +273,7 @@ void Renderer::CreateScene()
 	{
 		iObject = CreateDisplayList( iObjFileNames[0] );
 	}
+
 }
 
 GLuint Renderer::CreateDisplayListSphere()
@@ -192,6 +301,7 @@ GLuint Renderer::CreateDisplayListSphere()
 
 	return displayListId;
 }
+
 GLuint Renderer::CreateDisplayList( const string& aObjFilename )
 {
 	GLuint displayListId = 0;
@@ -567,6 +677,9 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 {
 	static float exposureIncrement = 0.02f;
 
+	unsigned int numberOfEnvironments = 0;
+	unsigned int numberOfObjects = 0;
+
 	switch( key )
 	{
 	case '+':
@@ -581,17 +694,60 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 	case 'l':
 		iToneMapper->setLogAverage( iToneMapper->getLogAverage() - exposureIncrement);
 	    break;
-	case 'm':
-		iMaterialIndex = (iMaterialIndex + 1) % KNumberOfMaterials;
-		break;
-	case 'M':
-		iMaterialIndex -= 1;
-		if ( iMaterialIndex < 0 )
+	case 'e':
+		numberOfEnvironments = iEnvironmentFileNames.size();
+
+		if ( numberOfEnvironments > 1 )
 		{
-			iMaterialIndex = KNumberOfMaterials - 1;
+			iLightEnvironmentIndex = (iLightEnvironmentIndex + 1) % numberOfEnvironments;
+
+			delete iCubeMap;
+			delete iDiffuseConvCubeMap;
+
+			iCubeMap = new CubeMap( 4 );
+			iDiffuseConvCubeMap = new CubeMap( 4 );
+
+			iCubeMap->setupCompressedCubeMap( iEnvironmentFileNames[iLightEnvironmentIndex] );
+			iDiffuseConvCubeMap->setupCompressedCubeMap( iDiffuseConvFileNames[iLightEnvironmentIndex] );
+
+			iMaterials[iMaterialIndex]->setEnvironmentCubeMap( iCubeMap->getCubeMapId() );
+			iMaterials[iMaterialIndex]->setDiffuseConvCubeMap( iDiffuseConvCubeMap->getCubeMapId() );
 		}
 		break;
+	case 'E':
+		numberOfEnvironments = iEnvironmentFileNames.size();
+
+		if (numberOfEnvironments > 1 )
+		{
+			iLightEnvironmentIndex = (iLightEnvironmentIndex + (numberOfEnvironments - 1)) % numberOfEnvironments;
+
+			delete iCubeMap;
+			delete iDiffuseConvCubeMap;
+
+			iCubeMap = new CubeMap( 4 );
+			iDiffuseConvCubeMap = new CubeMap( 4 );
+
+			iCubeMap->setupCompressedCubeMap( iEnvironmentFileNames[iLightEnvironmentIndex] );
+			iDiffuseConvCubeMap->setupCompressedCubeMap( iDiffuseConvFileNames[iLightEnvironmentIndex] );
+
+			iMaterials[iMaterialIndex]->setEnvironmentCubeMap( iCubeMap->getCubeMapId() );
+			iMaterials[iMaterialIndex]->setDiffuseConvCubeMap( iDiffuseConvCubeMap->getCubeMapId() );
+		}
+		break;
+	case 'm':
+		iMaterialIndex = (iMaterialIndex + 1) % KNumberOfMaterials;
+
+		iMaterials[iMaterialIndex]->setEnvironmentCubeMap( iCubeMap->getCubeMapId() );
+		iMaterials[iMaterialIndex]->setDiffuseConvCubeMap( iDiffuseConvCubeMap->getCubeMapId() );
+		break;
+	case 'M':
+		iMaterialIndex = (iMaterialIndex + (KNumberOfMaterials - 1) ) % KNumberOfMaterials;
+
+		iMaterials[iMaterialIndex]->setEnvironmentCubeMap( iCubeMap->getCubeMapId() );
+		iMaterials[iMaterialIndex]->setDiffuseConvCubeMap( iDiffuseConvCubeMap->getCubeMapId() );
+		break;
 	case 'o': 
+		numberOfObjects = iObjFileNames.size();
 		// if there is more than one object, allow user to change object
 		if ( iObjFileNames.size() > 1 )
 		{
@@ -606,13 +762,11 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 		break;
 	case 'O':
 		// if there is more than one object, allow user to change object
-		if ( iObjFileNames.size() > 1 )
+		numberOfObjects = iObjFileNames.size();
+
+		if ( numberOfObjects > 1 )
 		{
-			iObjFileNameIndex -= 1;
-			if ( iObjFileNameIndex < 0 )
-			{
-				iObjFileNameIndex = iObjFileNames.size() - 1;
-			}
+			iObjFileNameIndex = (iObjFileNameIndex + (numberOfObjects - 1)) % numberOfObjects;
 
 			// delete current display list
 			glDeleteLists( iObject, 1 );

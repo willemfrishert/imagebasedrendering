@@ -44,6 +44,10 @@ void IBLPerfectReflection::stop()
 	glDisable(GL_TEXTURE_CUBE_MAP);
 }
 
+void IBLPerfectReflection::setEnvironmentCubeMap( GLuint aCubeMapTexId )
+{
+	this->iCubeMapTexId = aCubeMapTexId;
+}
 /**
  *
  */
