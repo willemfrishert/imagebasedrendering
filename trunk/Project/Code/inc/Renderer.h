@@ -165,6 +165,8 @@ private:
 	bool CheckExistanceCubeMap(const string& aStrReflectMapName,
 							   const string& aStrDiffuseConvMapName);
 
+	void ToggleEnvironment(bool next);
+
 	//DRAWING FUNCTIONS
 	//------------------
 
