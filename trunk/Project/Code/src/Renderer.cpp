@@ -67,17 +67,15 @@ Renderer::Renderer()
 	iCubeMap = new CubeMap( 4 );
 	iDiffuseConvCubeMap = new CubeMap( 4 );
 	GetTrackball().SetResolution( 1.0 );
-	iMenu = new GLMenu(KTextureHeight, KTextureWidth, (int)GLUT_BITMAP_HELVETICA_18);
+	iMenu = new GLMenu(KTextureHeight, KTextureWidth, (int)GLUT_BITMAP_HELVETICA_12);
 	
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
-	iMenu->addMenuLine("(m/M) Loop Materials");
+	iMenu->addMenuLine("(e/E) Next/Previous Light Environment");
+	iMenu->addMenuLine("(m/M) Next/Previous Material");
+	iMenu->addMenuLine("(f/F) Increase/Decrease Fresnel's Eta");
+	iMenu->addMenuLine("(b/B) Blooming");
+	iMenu->addMenuLine("(o/O) Next/Previous Model");
+	iMenu->addMenuLine("(q) Quit");
+	iMenu->addMenuLine("(h) Toggle Help Menu");
 }
 
 
@@ -261,6 +259,8 @@ void Renderer::CreateScene()
 	this->iMaterials[1] = new IBLRefraction(1.5f, 1.0f, "./shader/iblrefraction", iCubeMap->getCubeMapId());
 	this->iMaterials[2] = new Diffuse( "./shader/diffuse", iDiffuseConvCubeMap->getCubeMapId() );
 	this->iMaterials[3] = new Porcelain(1.333f, 1.0f, "./shader/porcelain", iCubeMap->getCubeMapId(), iDiffuseConvCubeMap->getCubeMapId() );
+
+	iUIHandler->AddKeyListener( static_cast<IBLRefraction*>(this->iMaterials[1]) );
 
 	// load object file names from file
 	OBJLoader::loadModelFileNames("./3ds/models.txt", iObjFileNames, "./3ds/");
@@ -484,7 +484,7 @@ void Renderer::RenderScene()
 	// Draw Text
 	FramesPerSec();
 
-	DrawText();
+	//DrawText();
 
 	// Draw Menu
 	if (iShowMenu)
@@ -695,44 +695,10 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 		iToneMapper->setLogAverage( iToneMapper->getLogAverage() - exposureIncrement);
 	    break;
 	case 'e':
-		numberOfEnvironments = iEnvironmentFileNames.size();
-
-		if ( numberOfEnvironments > 1 )
-		{
-			iLightEnvironmentIndex = (iLightEnvironmentIndex + 1) % numberOfEnvironments;
-
-			delete iCubeMap;
-			delete iDiffuseConvCubeMap;
-
-			iCubeMap = new CubeMap( 4 );
-			iDiffuseConvCubeMap = new CubeMap( 4 );
-
-			iCubeMap->setupCompressedCubeMap( iEnvironmentFileNames[iLightEnvironmentIndex] );
-			iDiffuseConvCubeMap->setupCompressedCubeMap( iDiffuseConvFileNames[iLightEnvironmentIndex] );
-
-			iMaterials[iMaterialIndex]->setEnvironmentCubeMap( iCubeMap->getCubeMapId() );
-			iMaterials[iMaterialIndex]->setDiffuseConvCubeMap( iDiffuseConvCubeMap->getCubeMapId() );
-		}
+		ToggleEnvironment( false );
 		break;
 	case 'E':
-		numberOfEnvironments = iEnvironmentFileNames.size();
-
-		if (numberOfEnvironments > 1 )
-		{
-			iLightEnvironmentIndex = (iLightEnvironmentIndex + (numberOfEnvironments - 1)) % numberOfEnvironments;
-
-			delete iCubeMap;
-			delete iDiffuseConvCubeMap;
-
-			iCubeMap = new CubeMap( 4 );
-			iDiffuseConvCubeMap = new CubeMap( 4 );
-
-			iCubeMap->setupCompressedCubeMap( iEnvironmentFileNames[iLightEnvironmentIndex] );
-			iDiffuseConvCubeMap->setupCompressedCubeMap( iDiffuseConvFileNames[iLightEnvironmentIndex] );
-
-			iMaterials[iMaterialIndex]->setEnvironmentCubeMap( iCubeMap->getCubeMapId() );
-			iMaterials[iMaterialIndex]->setDiffuseConvCubeMap( iDiffuseConvCubeMap->getCubeMapId() );
-		}
+		ToggleEnvironment( true );
 		break;
 	case 'm':
 		iMaterialIndex = (iMaterialIndex + 1) % KNumberOfMaterials;
@@ -781,6 +747,41 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 	case 'h':
 		iShowMenu = ! iShowMenu;
 		break;
+	}
+}
+
+/**
+ * @param next
+ */
+void Renderer::ToggleEnvironment(bool next)
+{
+	unsigned int numberOfEnvironments = 0;
+	unsigned int numberOfObjects = 0;
+
+	numberOfEnvironments = iEnvironmentFileNames.size();
+
+	if (numberOfEnvironments > 1 )
+	{
+		if ( next )
+		{
+			iLightEnvironmentIndex = (iLightEnvironmentIndex + 1) % numberOfEnvironments;
+		}
+		else
+		{
+			iLightEnvironmentIndex = (iLightEnvironmentIndex + (numberOfEnvironments - 1)) % numberOfEnvironments;
+		}
+
+		delete iCubeMap;
+		delete iDiffuseConvCubeMap;
+
+		iCubeMap = new CubeMap( 4 );
+		iDiffuseConvCubeMap = new CubeMap( 4 );
+
+		iCubeMap->setupCompressedCubeMap( iEnvironmentFileNames[iLightEnvironmentIndex] );
+		iDiffuseConvCubeMap->setupCompressedCubeMap( iDiffuseConvFileNames[iLightEnvironmentIndex] );
+
+		iMaterials[iMaterialIndex]->setEnvironmentCubeMap( iCubeMap->getCubeMapId() );
+		iMaterials[iMaterialIndex]->setDiffuseConvCubeMap( iDiffuseConvCubeMap->getCubeMapId() );
 	}
 }
 
