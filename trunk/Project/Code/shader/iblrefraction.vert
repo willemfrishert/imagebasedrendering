@@ -4,7 +4,7 @@ uniform float eta;
 uniform float f;
 uniform float fresnelPower;
 
-varying float ratio;
+varying float reflectance;
 
 void main(void)
 {
@@ -16,7 +16,7 @@ void main(void)
 
 	// Compute the ratio created by Christophe Schlick
 	float cosTheta = dot(-V, N);
-	ratio = f + (1.0 - f) * pow(1.0 - cosTheta, fresnelPower);
+	reflectance = f + (1.0 - f) * pow(1.0 - cosTheta, fresnelPower);
 
 	// get the two vectors: reflection and refraction
 	refraction = refract(V, N, eta);
