@@ -14,14 +14,14 @@ using namespace std;
 class OpenGLUtility
 {
 public:
-	static void RenderSceneOnQuadMultiTex( const vector<GLuint>& aTextureId, const vector<GLenum>& aTextureUnit );
+	static void RenderSceneOnQuadMultiTex(const GLuint* aTextureId, int aNumberOfTextures);
 	
 	// GL ERROR CHECK
 	static inline int CheckGLError(char *aFile, int aLine);
 
 private:
-	static void EnableMultitexturing( const vector<GLuint>& aTextureId, const vector<GLenum>& aTextureUnit );
-	static void DisableMultitexturing( const vector<GLenum>& aTextureUnit );
+	static void EnableMultitexturing( const GLuint* aTextureId, const GLenum* aTextureUnit, int aNumberOfTextures );
+	static void DisableMultitexturing( const GLenum* aTextureUnit, int aNumberOfTextures );
 };
 
 inline int OpenGLUtility::CheckGLError(char *aFile, int aLine)

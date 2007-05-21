@@ -14,7 +14,7 @@ class BlurTexture
 public:
 	BlurTexture();
 	~BlurTexture();
-	GLuint* BlurTexture::processData(GLuint aTextureId);
+	void processData(GLuint aProcessTex, GLuint* aBlurredTextures);
 
 private:
 
@@ -32,15 +32,6 @@ private:
 		ETextureSize1   = 1
 	};
 
-	enum TTextureID
-	{
-		ETextureId128 = 0,
-		ETextureId64,
-		ETextureId32,
-		ETextureId16
-	};
-
-
 	void Init();
 	void InitTextures();
 	void InitFramebufferObject();
@@ -49,26 +40,25 @@ private:
 	void InitBlurShaders();
 	
 	void BlurMipmap( GLuint aTextureID, GLuint aCounter, GLuint aMipmapSize, GLuint aBlurPasses );
-
-	void RenderSceneOnQuad( GLuint aTextureID);
-	void RenderSceneOnQuad( GLuint aTextureID, GLuint aVertexSize );
+	void RenderSceneOnQuad( GLuint aTextureID, GLuint aTextureSize );
 
 	GLint iOldViewPort[4];
 
 	GLuint iOriginalImageSize;
 
-
 	FrameBufferObject* iOriginalFBO;
 	FrameBufferObject* iIntermediateFBO[KNumberOfBlurLevels];
 	FrameBufferObject* iBlendedFBO;
 
-	GLuint iOriginalTexture;
-	GLuint iHorizBlurredTexture[KNumberOfBlurLevels];
-	GLuint iFinalBlurredTexture[KNumberOfBlurLevels];
-	GLuint iDownScaledTexture[KNumberOfBlurLevels];
+	FBOTextureAttachment iOriginalTexAttachment;
+	FBOTextureAttachment iHorizBlurredTexAttachment[KNumberOfBlurLevels];
+	FBOTextureAttachment iVertBlurredTexAttachment[KNumberOfBlurLevels];
 
+	// final blurred texture id is the same as vertical texture id
+	GLuint iFinalBlurredTexture[KNumberOfBlurLevels];
+
+	GLuint iBlurPasses[KNumberOfBlurLevels];
 	GLuint iMipmapSize[KNumberOfBlurLevels];
-	GLuint iMipmapDelta[KNumberOfBlurLevels];
 
 	// ########### SHADERS DECLARATIONS ############
 	ShaderProgram* iHorizontalShaderProgram;
@@ -78,10 +68,8 @@ private:
 	ShaderObject* iVerticalBlurFragmentShader;
 	ShaderObject* iCodecRGBEFragmentShader;
 
-	ShaderUniformValue<int> iTextureOriginalUniform;
-	ShaderUniformValue<int> iTextureHorizontalUniform;
 	ShaderUniformValue<int> iMipmapSizeUniform;
-	ShaderUniformValue<int> iHorizTextureSizeUniform;
+	ShaderUniformValue<int> iVerticalTextureSizeUniform;
 
 	ShaderUniformValue<float> iHorizBlurWeight1Uniform;
 	ShaderUniformValue<float> iHorizBlurWeight2Uniform;
