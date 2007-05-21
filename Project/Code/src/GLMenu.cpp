@@ -32,7 +32,7 @@ void GLMenu::draw()
 	float startPos = 16;
 	const float pixelsPerLine = 48.0;
 	static float pixelsizeH = 1.0/iWindowHeight;
-	static float indent = (1.0f/iWindowWidth) * 10.0f;
+	static float indent = (float)iWindowWidth * 0.05f;
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -55,11 +55,12 @@ void GLMenu::draw()
 			std::vector<char*>::const_iterator linesIt = lines.begin();
 			std::vector<char*>::const_iterator end = lines.end();
 			
-			glColor3f(1, 1, 1);
+			glColor3f(0.5, 0.5, 0.7);
 			
 			for(; linesIt != end; ++linesIt, startPos+= 16)
 			{
-				glRasterPos2f(indent, iWindowHeight - startPos);
+				//glRasterPos2f(indent, iWindowHeight - startPos);
+				glRasterPos2f(indent, startPos);
 				int len = strlen( *linesIt );
 				for (unsigned int i = 0; i < len; i++){
 					glutBitmapCharacter((void*)iGlutFont,(*linesIt)[i]);
