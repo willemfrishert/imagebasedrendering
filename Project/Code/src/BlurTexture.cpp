@@ -58,7 +58,6 @@ void BlurTexture::InitTextures()
 	iOriginalTexAttachment.mipmapLevel = 0;
 
 	iOriginalFBO->bind();
-	iOriginalFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
 
 	glBindTexture(iOriginalTexAttachment.target, iOriginalTexAttachment.id);
 	glTexParameterf(iOriginalTexAttachment.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -70,6 +69,7 @@ void BlurTexture::InitTextures()
 	glGenerateMipmapEXT(iOriginalTexAttachment.target);
 
 	iOriginalFBO->attachTextureAttachment(iOriginalTexAttachment);
+	iOriginalFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
 
 
 	// setup N intermediate FBOs. One FBO per mipmap level. Each FBO contains 2 textures used 
