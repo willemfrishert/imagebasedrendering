@@ -1,8 +1,9 @@
-//uniform sampler2D irradianceMap;
-//varying vec3 R;
+uniform float f;
+uniform float fresnelPower;
+
 varying vec3 N;
 varying vec3 V;
-//varying float Ks;
+varying float ratio;
 
 void main(void)
 {
@@ -13,11 +14,10 @@ void main(void)
 	V = V * gl_NormalMatrix;
 	V = normalize(V);
 
-	//// using the incident view vector
-	//R = reflect(V, N);
-
-	///*** OPTIMIZE: THE reflect can be computed by reusing the dot here below **/
-	//Ks = pow(dot(-V, N), 5.0);
+	// Compute the ratio created by Christophe Schlick
+	// See OpenGL Shading Language, Second Edition (orange book) page 337
+	float cosTheta = dot(-V, N);
+	ratio = f + (1.0 - f) * pow(1.0 - cosTheta, fresnelPower);
 
 	gl_Position = ftransform();
 }

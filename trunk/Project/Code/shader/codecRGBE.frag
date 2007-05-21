@@ -15,3 +15,17 @@ vec4 encodeRGBE(in vec4 color)
 
 	return color;
 }
+
+//float invScale = 1.0/255.0;
+//float invBias = 0.5;
+//
+//vec4 encodeRGBE(vec4 color)
+//{
+//   vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0);
+//   float maxChannel = max(max(color.r, color.g), color.b);
+//
+//   maxChannel = max(maxChannel, 1e-8);
+//   finalColor.rgb /= maxChannel;
+//   finalColor.a = log2(maxChannel) * invScale + invBias;
+//   return finalColor;
+//} 
