@@ -1,1 +1,3 @@
-indian-statue2.obj
+Armadillo.obj
+2HeadedDragon50K.obj
+teapot.obj
