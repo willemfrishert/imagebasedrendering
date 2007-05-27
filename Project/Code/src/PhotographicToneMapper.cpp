@@ -34,7 +34,7 @@ PhotographicToneMapper::~PhotographicToneMapper(void)
  */
 void PhotographicToneMapper::toneMap(GLuint aOriginalTexture, GLuint aLuminanceTexture)
 {
-	// Compute Log information: LOG AVERAGE, LOG MIN and LOG MAX 
+	// Compute Log information: LOG AVERAGE, MIN and MAX 
 	float logStatistics[4];
 	iLogAverageCalculator->processData(aLuminanceTexture, logStatistics);
 	float logAverage = exp( (logStatistics[0] / (float)(iHeight * iWidth)));
@@ -42,11 +42,13 @@ void PhotographicToneMapper::toneMap(GLuint aOriginalTexture, GLuint aLuminanceT
 	//printf("Key: %f\t\tLogAverage: %f\t\tPre-Exposure: %f\n", key, logAverage, correctExposure);
 	//printf("Lavg: %f\t\tScale: %f\n", logAverage, scale);
 	//printf("CORRECT: %f\t\CURRENT: %f\t\t NEW: %f\n", correctExposure, iPreviousExposure, newExposure);
+	//printf("LOGAVERAGE: %f\t\logMin: %f\t\t LogMax: %f\n", logAverage, logStatistics[3], logStatistics[2]);
 
 	float currentExposure = computeCurrentExposure(logAverage, logStatistics[3], logStatistics[2]);
 
-	iLogAverageUniform->setValue( logAverage );
 	iExposureUniform->setValue( currentExposure );
+
+	//printf("Exposure: %f\n", currentExposure);
 
 	iShaderProgram->useProgram();
 	{
@@ -65,21 +67,6 @@ void PhotographicToneMapper::setExposure(float aValue)
 	this->iExposureUniform->setValue( aValue );
 
 	printf("Exposure Set: %f\n", aValue);
-}
-
-/**
- * @return the value of the exposure
- */
-float PhotographicToneMapper::getLogAverage()
-{
-	return this->iLogAverageUniform->getValue();
-}
-
-void PhotographicToneMapper::setLogAverage(float aValue)
-{
-	//aValue = aValue < 0.0 ? 1e-10 : aValue;
-	this->iLogAverageUniform->setValue( aValue );
-	printf("Log Average Set: %f\n", aValue);
 }
 
 /**
@@ -104,8 +91,8 @@ float PhotographicToneMapper::getExposure()
 float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float aMinLuminance, float aMaxLuminance )
 {
 	// Key of the Scene: the log2(log(Luminance)) is on purpose
-	float Log2LMin = Utility::log2(aMinLuminance);
-	float Log2LMax = Utility::log2(aMaxLuminance);
+	float Log2LMin = Utility::log2(aMinLuminance + 1e-8);
+	float Log2LMax = Utility::log2(aMaxLuminance + 1e-8);
 
 #ifdef _DEBUG
 	assert(aLogLAverage >= 1e-8);
@@ -138,7 +125,7 @@ float PhotographicToneMapper::computeCurrentExposure( float aLogLAverage, float 
 	iPreviousExposure = currentExposure;
 
 	// update frameCount
-	frameCount = (frameCount + 1) % 15;
+	frameCount = (frameCount + 1) % 25;
 
 	return iPreviousExposure;
 }
@@ -214,8 +201,6 @@ void PhotographicToneMapper::initShaders( string fragmentShaderFilename )
 {
 	iShaderProgram				= new ShaderProgram();
 	iOriginalTextureUniform		= new ShaderUniformValue<int>();
-	iLuminanceTextureUniform	= new ShaderUniformValue<int>();
-	iLogAverageUniform			= new ShaderUniformValue<float>();
 	iExposureUniform			= new ShaderUniformValue<float>();
 
 	iFragmentShader				= new ShaderObject(GL_FRAGMENT_SHADER, fragmentShaderFilename);
@@ -224,22 +209,13 @@ void PhotographicToneMapper::initShaders( string fragmentShaderFilename )
 	iOriginalTextureUniform->setValue( 0 );
 	iOriginalTextureUniform->setName("originalTex");
 	
-	iLuminanceTextureUniform->setValue( 1 );
-	iLuminanceTextureUniform->setName("luminanceTex");
-	
-	iLogAverageUniform->setValue( 0.0f );
-	iLogAverageUniform->setName("logAverage");
-
 	iExposureUniform->setValue( 1.0f );
 	iExposureUniform->setName("exposure");
 
 	iShaderProgram->attachShader( *iFragmentShader );
 	iShaderProgram->attachShader( *CodecRGBE::getShaderObject() );
 	iShaderProgram->addUniformObject( iOriginalTextureUniform );
-	iShaderProgram->addUniformObject( iLuminanceTextureUniform );
-	iShaderProgram->addUniformObject( iLogAverageUniform );
 	iShaderProgram->addUniformObject( iExposureUniform );
-	//iShaderProgram->addUniformObject( iSensitivityUniform );
 
 	// after all the shaders have been attached
 	iShaderProgram->buildProgram();
