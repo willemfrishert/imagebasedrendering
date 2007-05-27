@@ -1,0 +1,61 @@
+\documentclass[twocolumn,8pt]{article}
+
+\topmargin    -10pt % Might need to be set to 0pt 
+                      % for some installations
+
+\textheight    610pt
+\columnsep      24pt
+
+
+\title{Real-Time HDR Image Based Lighting}
+
+
+\author{Jo\~{a}o Pedro Jorge\thanks{joajo939@student.liu.se} \and Willem Frishert\thanks{wilfr265@student.liu.se}}
+\date{27-05-2007}
+
+\usepackage{subfigure}
+\usepackage[pdftex]{graphicx}
+
+\begin{document}
+\small
+\maketitle
+
+\section{Abstract}
+
+\section{Introduction}
+Motivation
+Previous work
+
+\section{HDR Pipeline}
+
+\subsection{HDR Texturing}
+limitation ATI cards (Only supports point-filtering 16bit FP textures). Resort to other means: RGBE
+
+\subsection{Cube Mapping}
+Cheaper to index cube maps in shader than panoramas.
+
+\subsection{Tone Mapping}
+Reinhard Photographic tonemapper, auto-exposure, vignette, log average luminance, parallel reduction
+
+\subsection{Blooming}
+Brightpass, Blurring using pascal pyramid (two step vertical and horizontal). Downsampling and upsampling issues
+
+\section{Image Based Lighting}
+
+\subsection{Materials}
+perfect reflection, perfect refraction, diffuse and porcelain.
+
+\subsection{Lightprobes}
+Obtained Lightprobes from Tappan kitchen and yard.
+
+\section{Results}
+
+\section{Conclusion and Future work}
+
+
+% ### BIBLIOGRAPHY ###
+\bibliography{bibliography}{}
+	\bibliographystyle{plain}
+\end{document}
+
+\end{document}
