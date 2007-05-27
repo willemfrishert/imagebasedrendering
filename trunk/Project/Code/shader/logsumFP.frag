@@ -10,11 +10,6 @@ void main(void)
 {
 	// NOTE: extract from THE SECOND CHANNEL: Y, where log(luminance)
 	// should be stored
-    //float left		= texture2D(inputTexture, topLeft / height).y;
-    //float right		= texture2D(inputTexture, topRight / height).y;
-    //float top		= texture2D(inputTexture, bottomLeft / height).y;
-    //float bottom	= texture2D(inputTexture, bottomRight / height).y;
-	
 	vec4 left		= texture2D(inputTexture, topLeft / height);
     vec4 right		= texture2D(inputTexture, topRight / height);
     vec4 top		= texture2D(inputTexture, bottomLeft / height);
