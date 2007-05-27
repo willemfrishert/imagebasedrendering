@@ -179,6 +179,8 @@ public:
 	/// This is used to be able to pass rendering method to OpenGL.
 	static Renderer* iCurrentRenderer;
 
+	static const string WINDOW_TITLE;
+
 
 	//PRIVATE DATA
 	//------------------
