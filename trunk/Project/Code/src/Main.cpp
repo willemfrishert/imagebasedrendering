@@ -25,7 +25,7 @@ void initContext(int argc, char **argv)
 	glutInitDisplayMode( GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition( KWindowPositionX, KWindowPositionY );
 	glutInitWindowSize( KWindowWidth, KWindowHeight ); //800,600);
-	glutCreateWindow("Real-Time HDR Image Based Lighting");
+	glutCreateWindow(Renderer::WINDOW_TITLE.c_str());
 
 	//Set some Glut functions
 	glutKeyboardFunc( ProcessNormalKeysWithUi );
@@ -36,7 +36,7 @@ void initContext(int argc, char **argv)
 	glutDisplayFunc(  RenderSceneWithRenderer );
 	//glutIdleFunc(     RenderSceneWithRenderer );
 	glutReshapeFunc(  ResizeSceneWithRenderer );
-	glutTimerFunc(30, RenderSceneWithRendererTimerFunc, 30);
+	glutTimerFunc(10, RenderSceneWithRendererTimerFunc, 10);
 
 #ifdef _WIN32
 	GLenum err = glewInit();
