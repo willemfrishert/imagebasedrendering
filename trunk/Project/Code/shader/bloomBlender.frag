@@ -25,5 +25,13 @@ void main(void)
 	fragColor.rgb += color4.rgb * 0.2;
 	fragColor.rgb += color5.rgb * 0.2;
 
+	// Vignette Effect
+	texCoord -= 0.5;
+	float vignette = 1.0 - dot(texCoord, texCoord);
+
+	vignette = vignette * vignette * vignette * vignette;
+
+	fragColor.rgb *= vignette;
+
 	gl_FragColor = encodeRGBE(fragColor);
 }
