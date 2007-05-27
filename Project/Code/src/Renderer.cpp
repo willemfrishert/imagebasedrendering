@@ -41,6 +41,7 @@ const float KZFar	= 600.0f;
 //INIT STATIC DATA
 Renderer* Renderer::iCurrentRenderer = 0;
 
+const string Renderer::WINDOW_TITLE = "Real-Time HDR Image Based Lighting";
 
 //CONSTRUCTORS
 //
@@ -346,7 +347,7 @@ void Renderer::FramesPerSec()
 		//secure sprintf_s: (required by visualstudio 2005)
 #ifdef _WIN32
 		//sprintf_s(iFpsCountString,"FPS:%4.2f", iFrame*1000.0/( iCurrentTime - iPreviousTime ));
-		sprintf_s  (iFpsCountString,"FPS:%4.2f", iFrame*1000.0/( iCurrentTime - iPreviousTime ));
+		sprintf_s  (iFpsCountString,"%4.2f fps", iFrame*1000.0/( iCurrentTime - iPreviousTime ));
 #else
 		sprintf(iFpsCountString,"FPS:%4.2f", iFrame*1000.0/( iCurrentTime - iPreviousTime ) );
 #endif
@@ -365,39 +366,7 @@ void Renderer::FramesPerSec()
 */
 void Renderer::DrawText() const
 {
-	float x( -0.9f ), y( -0.9f );
-	
-	//configure the transforms for 2D
-	glMatrixMode( GL_MODELVIEW );
-	glPushMatrix();
-	{
-		glLoadIdentity();
-
-		glMatrixMode( GL_PROJECTION );
-		glPushMatrix();
-		{
-				glLoadIdentity();
-				gluOrtho2D( -1.0f, 1.0f, -1.0f, 1.0f);
-			
-				glDisable(GL_LIGHTING);
-				glDisable( GL_TEXTURE_2D );
-				glDisable(GL_DEPTH_TEST);
-			
-				glColor3f(1.0, 0.0, 0.0);
-				glRasterPos2f(x, y);
-			
-				for (int i = 0, len = static_cast<int>( strlen(iFpsCountString) ); i < len; i++)
-				{
-					glutBitmapCharacter( GLUT_BITMAP_HELVETICA_18, iFpsCountString[i] );
-				}
-				//glFlush();
-				glEnable(GL_LIGHTING);
-				glEnable(GL_DEPTH_TEST);
-		}
-		glPopMatrix(); // PROJECTION
-	}
-	glMatrixMode( GL_MODELVIEW );
-	glPopMatrix(); // MODELVIEW
+	glutSetWindowTitle( (WINDOW_TITLE + " < " + iFpsCountString + " >").c_str());
 }
 
 
@@ -475,24 +444,17 @@ void Renderer::RenderScene()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	iToneMapper->toneMap(capturedSceneTexId, finalScene);
-	//iSCurveToneMapper->toneMap(capturedSceneTexId, finalScene);
-	
-	//RenderSceneOnQuad(capturedSceneTexId, GL_TEXTURE_2D, 512, 512);
-
-	//iScreenCapture->renderToScreen();
 
 	// Draw Text
 	FramesPerSec();
-
-	//DrawText();
+	DrawText();
 
 	// Draw Menu
 	if (iShowMenu)
 	{
 		iMenu->draw();
 	}
-	
-	
+
 	glutSwapBuffers();
 }
 
@@ -688,12 +650,6 @@ void Renderer::ProcessNormalKeys(unsigned char key, int x, int y )
 	case '-':
 		iToneMapper->setExposure( iToneMapper->getExposure() - exposureIncrement);
 		break;
-	case 'L':
-		iToneMapper->setLogAverage( iToneMapper->getLogAverage() + exposureIncrement);
-	    break;
-	case 'l':
-		iToneMapper->setLogAverage( iToneMapper->getLogAverage() - exposureIncrement);
-	    break;
 	case 'e':
 		ToggleEnvironment( false );
 		break;
