@@ -1,3 +1,4 @@
 Armadillo.obj
 2HeadedDragon50K.obj
+indian.obj
 teapot.obj
