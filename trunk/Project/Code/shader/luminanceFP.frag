@@ -13,15 +13,6 @@ void main(void)
 
 	// Store luminance on the first channel and log(luminance) on the second
 	gl_FragColor = vec4(luminance, log(luminance + 10e-8), luminance, luminance);
-	
-	//float delta = 1.0;
-	//if(color.r > delta || color.g > delta || color.b > delta)
-	//	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-	//else
-	//	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-
-	//gl_FragColor = color;
-	//gl_FragColor = vec4(luminance, luminance, luminance, 1.0);
 }
 
 float computeLuminance(vec4 color)
