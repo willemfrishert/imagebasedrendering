@@ -19,10 +19,6 @@ public:
 
 	float getExposure();
 
-	void setLogAverage(float aValue);
-
-	float getLogAverage();
-
 	// methods
 private:
 
@@ -50,8 +46,6 @@ private:
 	ShaderProgram* iShaderProgram;
 	ShaderObject* iFragmentShader;
 	ShaderUniformValue<int>* iOriginalTextureUniform;
-	ShaderUniformValue<int>* iLuminanceTextureUniform;
-	ShaderUniformValue<float>* iLogAverageUniform;
 	ShaderUniformValue<float>* iExposureUniform;
 
 	// Parallel reduction
