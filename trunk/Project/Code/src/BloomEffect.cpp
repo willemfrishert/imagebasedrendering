@@ -7,7 +7,7 @@ using namespace std;
 
 BloomEffect::BloomEffect()
 : iOriginalImageSize( 512 )
-, iCycleTextureOutput( 0 )
+, iCycleTextureOutput( 1 )
 {
 	Init();
 }
@@ -36,10 +36,19 @@ void BloomEffect::ProcessNormalKeys( unsigned char key, int x, int y )
 	switch( key )
 	{
 	case 'b':
-		  iCycleTextureOutput = (iCycleTextureOutput + 1) % 7;
+#ifdef _DEBUG
+		iCycleTextureOutput = (iCycleTextureOutput + 1) % 7;
+#else
+		iCycleTextureOutput = (iCycleTextureOutput + 1) % 2;
+#endif // _DEBUG
 		break;
 	case 'B':
+#ifdef _DEBUG
 		iCycleTextureOutput = (iCycleTextureOutput + 6) % 7;
+#else
+		iCycleTextureOutput = (iCycleTextureOutput + 2) % 2;
+#endif // _DEBUG
+
 		break;
 	default:
 		break;
@@ -110,7 +119,7 @@ void BloomEffect::InitTextures()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, iOriginalImageSize, iOriginalImageSize, 0, GL_RGBA, GL_FLOAT, NULL);
-	
+
 	iBlendedFBO->attachTexture(iBlendedTexture, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, 0);
 
 	iBlendedFBO->attachDepthRenderBuffer(iOriginalImageSize, iOriginalImageSize);
@@ -182,7 +191,7 @@ void BloomEffect::Begin()
 	glGetIntegerv( GL_VIEWPORT, iOldViewPort );	
 
 	glViewport( 0, 0, iOriginalImageSize, iOriginalImageSize );
-	
+
 	// #### FIRST STEP: Draw the object into the original texture: 'originalTexture'
 	glClearColor( 0.0f, 0.0f, 0.0f, 1.0 );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -229,49 +238,51 @@ GLuint BloomEffect::End()
 	FrameBufferObject::unbind();
 
 	iBlurTexture->processData(iBrightpassTexture, iTextureLayers+1 );
-	
+
 	// blend the images as a final result
 	glViewport( iOldViewPort[0], iOldViewPort[1], iOldViewPort[2], iOldViewPort[3] );
 
 	glClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	
+
 	//RenderSceneOnQuad(iFinalBlurredTexture[0]);
 	RenderBloomEffect(iTextureLayers);
 
 	switch(iCycleTextureOutput)
 	{
-		case 0:
+	case 0:
 		{
 			return iTextureLayers[0]; // original tex
 		}
 		break;
-		case 1:
+#ifdef _DEBUG
+	case 1:
 		{
 			return iBrightpassTexture;
 		}
 		break;
-		case 2:
+	case 2:
 		{
 			return iTextureLayers[1];
 		}
 		break;
-		case 3:
+	case 3:
 		{
 			return iTextureLayers[2];
 		}
 		break;
-		case 4:
+	case 4:
 		{
 			return iTextureLayers[3];
 		}
 		break;
-		case 5:
+	case 5:
 		{
 			return iTextureLayers[4];
 		}
 		break;
-		default:
+#endif // _DEBUG
+	default:
 		{
 			return iBlendedTexture;
 		}
@@ -282,12 +293,12 @@ void BloomEffect::RenderBloomEffect(const GLuint* iTextureLayers)
 {
 	iBlendedFBO->bind();
 	glDrawBuffer( GL_COLOR_ATTACHMENT0_EXT );
-	
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	iBlenderShaderProgram->useProgram();
-		OpenGLUtility::RenderSceneOnQuadMultiTex( iTextureLayers, 5 );
+	OpenGLUtility::RenderSceneOnQuadMultiTex( iTextureLayers, 5 );
 	iBlenderShaderProgram->disableProgram();
 	FrameBufferObject::unbind();
 }
