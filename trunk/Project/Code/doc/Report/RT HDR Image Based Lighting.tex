@@ -23,8 +23,11 @@
 \section{Abstract}
 
 \section{Introduction}
-Motivation
-Previous work
+High Dynamic Range (HDR) images, in comparison to normal digital imaging techniques, contain a high dynamic range of exposures. Since it contains these high range of exposures, HDR images are able to convey a more realistic idea of the scene. 
+
+As part of the Image Based Rendering course, several labs are done revolving around HDR images. One of these labs in particular takes an in-depth look at creating an off-line rendered image using an HDR as light source. This process is referred to as HDR image based lighting (IBL). The goal of this project is to performed HDR IBL at real-time using hardware accelerated graphics.
+
+To gain an understanding on how to construct an HDR pipeline, the group has looked at real-time HDR IBL implementations that currently exist. Example implementations of the pipeline can be found at ******ATI RNL REF *** and ***** JAPANESE GUY DEMO GDC REF********
 
 \section{HDR Pipeline}
 
@@ -35,15 +38,25 @@ limitation ATI cards (Only supports point-filtering 16bit FP textures). Resort t
 Cheaper to index cube maps in shader than panoramas.
 
 \subsection{Tone Mapping}
-Reinhard Photographic tonemapper, auto-exposure, vignette, log average luminance, parallel reduction
+Reinhard Photographic tone mapper, auto-exposure, vignette, log average luminance, parallel reduction
 
 \subsection{Blooming}
-Brightpass, Blurring using pascal pyramid (two step vertical and horizontal). Downsampling and upsampling issues
+Bloom is a graphics effect used to reproduce an imaging artifact of real-world cameras. The effect produces fringes of light around high intensity light sources and leads to color bleeding to objects near these specific light sources. 
+
+Creating this effect can be described in three main steps. To be able to obtain a reasonable looking result and a good performance at the same time, a number of optimizations are done.  The blooming pipeline is shown in figure **** REF ****.
+
+The first step is to apply a high-pass filter which produces a texture that shows the high intensity lights. Applying the high-pass filter (bright-pass) is done by calculating the luminance of fragment and comparing it to the log average luminance of the original texture. Luminance values higher than the log average luminance will be considered to be high intensity light sources.
+
+The second step is to apply a radial basis function (RBF) in the form of a Gaussian kernel to the bright-pass texture to produce a texture that contains the fringes of light. Applying a Gaussian kernel directly to a high resolution texture has a complexity of $O \left ( M \times N \times m \times n  \right )$ where M,N are the dimensions of the texture being filtered and m,n are the dimensions of the filter kernel. Thus it shows that applying the kernel in this way is costly and will decrease the performance. 
+
+To keep the performance going and still obtain a good blooming result, adjustments are made to the algorithm. The first change is to linearly separate the Gaussian kernel so it is applied in a vertical and horizontal step. Doing this will change the complexity of the algorithm to $O \left ( M \times N + m \times n  \right )$ and drastically improve the performance. To be able to linearly separate the Gaussian kernel, a set of Pascal's pyramid is used. On top of this, the two pass technique is applied to different levels of mipmaps of the bright-pass texture. Applying a number of smaller kernel to the low resolution texture gives the same result as applying a large kernel to the higher resolution texture. The textures generated at this stage will contain the earlier mentioned fringes and be referred to as blurred textures. When using the RGBE to incorporate HDR information, one should keep in mind that down-sampling and up-sampling using bi-linear filtering will cause the most significant bit of the exponent to toggles (see \cite{hdrTexturing}). The solution to this issue is not to use the RGBE format for this part of the pipeline. Instead a 16 bit fixed point textures are used and HDR values going beyond the limit will be clamped to the maximum allowed value.
+
+Once the blurred textures have been created, they are blended with the original image using a manual weighted per blur level to form the final bloomed texture. These weights are empirically determined since it is highly effected by the tone mapping. 
 
 \section{Image Based Lighting}
 
 \subsection{Materials}
-perfect reflection, perfect refraction, diffuse and porcelain.
+To show that the environment is lit using an image four different kind of materials have been implemented that are dependant on the lighting environment. The materials implemented are perfect reflection, perfect refraction, diffuse and porcelain. The perfect reflection calculates a reflection vector based on the incident view vector and the normal. This reflection vector is then used to index the cube map which describes the environment. The perfect refraction uses a simplified version of the fresnel equation and calculates the reflectance coefficient at a particular point on the surface. Both the reflection and refraction vector are used to index the cube map and a linear interpolation is performed using the reflectance to achieve an approximation of a glass-like material. The diffuse material indexes a downsampled diffuse convolution cube map of the environment map using the normal of the object to obtain the correct shading. The porcelain material extends on this and uses the fresnel equation to calculate the amount of specularity the material has on top of the diffuse shading. The simplified fresnel equation is created by Christophe Schlick and can be found in \cite{opengl-orange-book}.
 
 \subsection{Lightprobes}
 Obtained Lightprobes from Tappan kitchen and yard.
