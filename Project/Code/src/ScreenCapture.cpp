@@ -10,6 +10,7 @@
 static GLenum screenCaptureTexTarget = GL_TEXTURE_2D;
 
 ScreenCapture::ScreenCapture(int width, int height)
+: iShaderProgram( NULL )
 {
 	// Setup Scene Texture
 	iCaptureFBO = new FrameBufferObject();
@@ -22,6 +23,7 @@ ScreenCapture::ScreenCapture(int width, int height)
 	iCaptureFBO->attachDepthRenderBuffer(width, height);
 	FrameBufferObject::unbind();
 
+#ifdef _DEBUG
 	iShaderProgram			= new ShaderProgram();
 	iInputTextureUniform	= new ShaderUniformValue<int>();
 
@@ -37,11 +39,18 @@ ScreenCapture::ScreenCapture(int width, int height)
 
 	// after all the shaders have been attached
 	iShaderProgram->buildProgram();
+#endif // _DEBUG
 
 }
 
 ScreenCapture::~ScreenCapture(void)
 {
+	if ( iShaderProgram )
+	{
+		delete iShaderProgram;
+		delete iFragmentShader;
+		delete iInputTextureUniform;
+	}
 }
 
 void ScreenCapture::changeResolution(int width, int height)
