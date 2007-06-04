@@ -33,14 +33,37 @@ void initContext(int argc, char **argv)
 	glutMouseFunc(    ProcessMouseEventWithUi );
 	glutMotionFunc(   ProcessMouseMotionEventWithUi );
 
+	//////////////////////////////////////////////////////////////////////////
+	// GLEW INIT
+	//////////////////////////////////////////////////////////////////////////
+	printf("Initializing Glew...\n");
+
+#ifdef _WIN32
+	GLenum err = glewInit();
+
+	if (GLEW_OK != err)
+	{
+		/* Problem: glewInit failed, something is seriously wrong. */
+		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+	}
+
+	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
+#endif	
+
+	if(GLEW_VERSION_2_0)
+	{
+		fprintf(stderr, "OpenGL 2.0 support OK.\n");
+	}
+	else
+	{
+		fprintf(stderr, "OpenGL 2.0 not supported!!!.\n");
+	}
+
+
 	glutDisplayFunc(  RenderSceneWithRenderer );
 	//glutIdleFunc(     RenderSceneWithRenderer );
 	glutReshapeFunc(  ResizeSceneWithRenderer );
 	glutTimerFunc(10, RenderSceneWithRendererTimerFunc, 10);
-
-#ifdef _WIN32
-	GLenum err = glewInit();
-#endif	
 }
 
 void testGPU()
