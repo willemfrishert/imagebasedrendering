@@ -58,7 +58,7 @@ Renderer::Renderer()
 , iMouseY( 0 )
 , iZoom( 0 )
 , iMouseButtonDown( GLUT_UP )
-, iShowMenu( false )
+, iShowMenu( true )
 , iMaterialIndex( 0 )
 , iObjFileNameIndex( 0 )
 , iLightEnvironmentIndex( 0 )
@@ -254,7 +254,6 @@ void Renderer::CreateScene()
 	this->iScreenCapture = new ScreenCapture(KTextureHeight, KTextureWidth);
 
 	this->iToneMapper = new PhotographicToneMapper(0, 0, KTextureWidth, KTextureHeight);
-	this->iSCurveToneMapper = new SShapedCurveToneMapper(0, 0, KTextureWidth, KTextureHeight);
 
 	this->iMaterials[0] = new IBLPerfectReflection( "./shader/iblreflection", iCubeMap->getCubeMapId() );
 	this->iMaterials[1] = new IBLRefraction(1.5f, 1.0f, "./shader/iblrefraction", iCubeMap->getCubeMapId());
