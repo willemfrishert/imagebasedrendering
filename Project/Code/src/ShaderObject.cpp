@@ -87,10 +87,12 @@ unsigned char* ShaderObject::readShaderFile(const char *filename)
 	unsigned char *buffer;
 	int bytesread;
 
+	string msg("Cannot open shader file: " + string(filename));
+
 	if(file == NULL)
 	{
-		ExtensionsLoader::printError("ERROR", "Cannot open shader file!");
-		return 0;
+		ExtensionsLoader::printError("ERROR", msg.c_str());
+		exit(0);
 	}
 
 #ifdef WIN32
