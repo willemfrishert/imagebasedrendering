@@ -215,7 +215,6 @@ private:
 	ScreenCapture* iScreenCapture;
 	LuminanceConverter* iLuminanceConverter;
 	PhotographicToneMapper* iToneMapper;
-	SShapedCurveToneMapper* iSCurveToneMapper;
 
 	Material* iMaterials[KNumberOfMaterials];
 	int iMaterialIndex;
