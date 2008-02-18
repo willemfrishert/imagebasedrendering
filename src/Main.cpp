@@ -65,7 +65,7 @@ void initContext(int argc, char **argv)
 	glutReshapeFunc(  ResizeSceneWithRenderer );
 	glutTimerFunc(10, RenderSceneWithRendererTimerFunc, 10);
 }
-
+/*
 void testGPU()
 {
 	const int side = 512;
@@ -89,6 +89,7 @@ void testGPU()
 	proc.processData(result);
 	delete f;
 }
+*/
 
 /**
 * Main method.
