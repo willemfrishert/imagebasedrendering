@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+
+\bibitem{hdrTexturing}
+Emil Persson.
+\newblock {HDR} texturing - {ATI} tecnologies, inc., 2007.
+
+\bibitem{reinhardParamEstimation}
+Erik Reinhard.
+\newblock Parameter estimation for photographic tone reproduction.
+\newblock {\em J. Graph. Tools}, 7(1):45--52, 2002.
+
+\bibitem{reinhardPhoto}
+Erik Reinhard, Michael Stark, Peter Shirley, and James Ferwerda.
+\newblock Photographic tone reproduction for digital images.
+\newblock {\em ACM Trans. Graph.}, 21(3):267--276, 2002.
+
+\bibitem{opengl-orange-book}
+Randi~J. Rost.
+\newblock {\em OpenGL(R) Shading Language (2nd Edition)}.
+\newblock Addison-Wesley Professional, January 2006.
+
+\end{thebibliography}
