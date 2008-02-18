@@ -1,2 +1,0 @@
-pisa
-pisa_conv_phong_1
